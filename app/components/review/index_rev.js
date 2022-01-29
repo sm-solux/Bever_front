@@ -5,7 +5,7 @@ import ReviewLogo from './review_logo';
 import ReviewStarbucks from './review_starbucks';
 import ReviewHollys from "./review_hollys";
 import ReviewEdiya from "./review_ediya";
-import ReviewTomNToms from "./review_tomntoms";
+import ReviewTwosome from "./review_twosome";
 
 const ReviewStack = createStackNavigator();
 
@@ -23,9 +23,9 @@ class ReviewComponent extends Component {
         <ReviewStack.Screen name='ReviewEdiya' component={ReviewEdiya} 
           options={{headerTitle: 'EDIYA COFFEE', headerTitleAlign: 'center',
             headerStyle: {backgroundColor: '#002E6C', height: 50}, headerTintColor: '#fff'}}/>
-        <ReviewStack.Screen name='ReviewTomNToms' component={ReviewTomNToms} 
-          options={{headerTitle: 'TOM N TOMS', headerTitleAlign: 'center',
-            headerStyle: {backgroundColor: '#59181C', height: 50}, headerTintColor: '#fff'}}/>
+        <ReviewStack.Screen name='ReviewTwosome' component={ReviewTwosome} 
+          options={{headerTitle: 'A TWOSOME PLACE', headerTitleAlign: 'center',
+            headerStyle: {backgroundColor: '#CA1A36', height: 50}, headerTintColor: '#fff'}}/>
       </ReviewStack.Navigator>
     )
   }

@@ -10,13 +10,13 @@ class ReviewLogo extends Component {
       starbucks: require('../../assets/images/logos/starbucks.png'),
       hollys: require('../../assets/images/logos/hollys.png'),
       ediya: require('../../assets/images/logos/ediya.png'),
-      tomntoms: require('../../assets/images/logos/tomntoms.png')
+      twosome: require('../../assets/images/logos/twosome.png')
     },
     brandName: {
       starbucks: 'Starbucks',
       hollys: 'Hollys',
       ediya: 'Ediya',
-      tomntoms: 'TomNToms'
+      twosome: 'Twosome'
     }
   }
 
@@ -43,7 +43,7 @@ class ReviewLogo extends Component {
         </View>
         <View style={styles.listView}>
           {this.renderBrandItem(this.state.brandLogo.ediya, this.state.brandName.ediya)}
-          {this.renderBrandItem(this.state.brandLogo.tomntoms, this.state.brandName.tomntoms)}
+          {this.renderBrandItem(this.state.brandLogo.twosome, this.state.brandName.twosome)}
         </View>
       </View>
     )

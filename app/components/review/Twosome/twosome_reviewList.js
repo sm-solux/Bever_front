@@ -5,7 +5,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-class TomNTomsReviewList extends Component {
+class TwosomeReviewList extends Component {
   state = {
     drinkID : "음료아이디",
     writer : "글 작성자 아이디",
@@ -29,11 +29,11 @@ class TomNTomsReviewList extends Component {
 
   renderReviewItem = () => (
     <TouchableOpacity
-      onPress={()=>this.props.navigation.navigate('TomNTomsReviewView')}
+      onPress={()=>this.props.navigation.navigate('TwosomeReviewView')}
     >
       <View style={styles.reviewItemView}>
         <Image 
-          source={require('../../../assets/images/tomntoms.jpg')}
+          source={require('../../../assets/images/twosome.jpg')}
           style={{width: 75, height: 75, resizeMode: 'contain'}}
         />
         <View style={{flex: 2.5}}>
@@ -91,7 +91,7 @@ class TomNTomsReviewList extends Component {
             left: windowWidth*0.82,
             top: windowHeight*0.7,
           }}
-          onPress={() => {this.props.navigation.navigate('TomNTomsReviewPost')}}
+          onPress={() => {this.props.navigation.navigate('TwosomeReviewPost')}}
         >
           <Image 
             source={require('../../../assets/images/addButton.png')}
@@ -159,4 +159,4 @@ const styles = StyleSheet.create({
   },
 })
 
-export default TomNTomsReviewList;
+export default TwosomeReviewList;

@@ -6,13 +6,13 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-class TomNTomsReviewView extends Component {
+class TwosomeReviewView extends Component {
   state={
     drinkID : "음료아이디",
     writer : "글 작성자 아이디",
     title: "게시글 제목",
     content: "게시글내용",
-    imageLink: require('../../../assets/images/tomntoms.jpg'),
+    imageLink: require('../../../assets/images/twosome.jpg'),
     date:"글 작성날짜",
     rate: 4.5,
   }
@@ -88,4 +88,4 @@ const styles = StyleSheet.create({
   }
 })
 
-export default TomNTomsReviewView;
+export default TwosomeReviewView;

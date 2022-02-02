@@ -26,6 +26,24 @@ class RecipeView extends Component {
       heartCount: 255
     }
   }
+  componentDidMount(){
+    let recipe = this.props.route.params.recipe;
+    let dates = recipe.date.replace('T', ' ');
+    this.setState({ 
+      post :{
+        drinkID: recipe.drinkID,
+        writer: recipe.writerNickname,
+        title: recipe.title,
+        content: recipe.content,
+        imageLink: recipe.imageLink,
+        heart: false,
+        heartCount: 255,
+        date:dates,
+      }
+     }) 
+
+     console.log(this.state.post)
+  }
 
   changeHeart = () => {
     this.setState({

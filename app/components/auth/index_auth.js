@@ -16,13 +16,18 @@ import { preURL } from '../../components/preURL';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
-// export let isLoggedIn = false;
 
 class LoginScreen extends Component {
   state = {
     keepLogIn: false,
     email: '',
     pw: '',
+  }
+  componentDidMount(){
+    AsyncStorage.getItem('isLoggedIn')
+            .then((value) => {
+              if (value == 'true') {this.props.navigation.navigate('Root', {screen: 'Main'});}
+            });
   }
 
   onChangeEmail = event =>{

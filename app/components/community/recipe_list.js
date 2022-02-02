@@ -24,8 +24,9 @@ const windowHeight = Dimensions.get('window').height;
 
 
 class RecipeList extends Component {
-  state={
-    searchValue:'',
+  state = {
+    searchValue: '',
+    lists: [],
     posts: {
       postID: '00000',
       imageLink: require('../../assets/images/starbucks.jpg'),
@@ -33,15 +34,19 @@ class RecipeList extends Component {
       content: '게시글 내용',
       date: '2022.01.07 11:23',
       writer: 'abcde',
-      lists:[]
-    }
+
+    },
+
   }
   componentDidMount() {
     axios
       .get(preURL.preURL + '/v1/recipe/list')
       .then(res => {
-        this.setState({ lists: res.data.list })
-        console.log(this.state.lists);
+        // console.log("2"+typeof(res.data));
+        // console.log( res.data);
+        this.setState({ lists: res.data })
+        // console.log(this.state.lists);
+        // console.log("3"+typeof(res.data));
       })
       .catch(err => {
         console.log('에러 발생: ', err);
@@ -55,63 +60,75 @@ class RecipeList extends Component {
         editable={true}
         placeholder='Search'
         placeholderTextColor='#BDBDBD'
-        onChange={value=>this.onChangeText(value)}
+        onChange={value => this.onChangeText(value)}
         style={styles.searchInput}
       />
       <TouchableOpacity
         style={styles.searchIcon}
-        onPress={value=>this.search(value)}
+        onPress={value => this.search(value)}
       >
         <Icon name='search' size={32} color='#7E7D7D' />
       </TouchableOpacity>
     </View>
   )
 
-  onChangeText(value) {
+  onChangeText = (value) => {
     this.setState({
       searchValue: value
     })
   }
 
-  search(value) {
+  search = (value) => {
     // TODO: 검색하는 메소드 작성
   }
 
+
   renderRecipeItem = () => (
-    <TouchableOpacity
-      onPress={()=>{this.props.navigation.navigate('RecipeView')}}
-    >
-      <View style={styles.recipeItem}>
-        {this.state.posts.imageLink ? (
-          <View style={{alignItems: 'center'}}>
-          <Image 
-            source={this.state.posts.imageLink}
-            style={{
-              backgroundColor: '#E8E8E8',
-              borderRadius: 10,
-              width: windowWidth*0.89,
-              height: windowHeight*0.3,
-            }}
-          />
-        </View>
-        ):(
-          <View style={{alignItems: 'center'}}>
-            <View style={{
-              backgroundColor: '#E8E8E8',
-              borderRadius: 10,
-              width: windowWidth*0.89,
-              height: windowHeight*0.1,
-              justifyContent:'center',
-              alignItems: 'center'
-            }}><Text>No Image</Text></View>
+
+    this.state.lists.reverse().map((recipe) => {
+
+      console.log(recipe);
+      let dates= recipe.date.replace('T', ' ');
+      return (
+        <TouchableOpacity
+          onPress={() => { this.props.navigation.navigate('RecipeView', {recipe:recipe} ); }}
+        >
+          <View style={styles.recipeItem}>
+            {recipe.imageLink ? (
+              <View style={{ alignItems: 'center' }}>
+                <Image
+                  source={{ uri: recipe.imageLink }}
+                  style={{
+                    backgroundColor: '#E8E8E8',
+                    borderRadius: 10,
+                    width: windowWidth * 0.89,
+                    height: windowHeight * 0.3,
+                  }}
+                />
+              </View>
+            ) : (
+              <View style={{ alignItems: 'center' }}>
+                <View style={{
+                  backgroundColor: '#E8E8E8',
+                  borderRadius: 10,
+                  width: windowWidth * 0.89,
+                  height: windowHeight * 0.1,
+                  justifyContent: 'center',
+                  alignItems: 'center'
+                }}><Text>No Image</Text></View>
+              </View>
+            )}
+            <View style={styles.recipeTextView}>
+              <Text style={styles.recipeTitle}>{recipe.title}</Text>
+              <Text style={styles.timeText}>{dates}</Text>
+            </View>
           </View>
-        )}
-        <View style={styles.recipeTextView}>
-          <Text style={styles.recipeTitle}>{this.state.posts.title}</Text>
-          <Text style={styles.timeText}>{this.state.posts.date}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+
+        </TouchableOpacity>
+
+      )
+    })
+
   )
 
   render() {
@@ -123,20 +140,18 @@ class RecipeList extends Component {
         {this.renderSearchBar()}
         <ScrollView>
           {this.renderRecipeItem()}
-          {this.renderRecipeItem()}
-          {this.renderRecipeItem()}
         </ScrollView>
         <TouchableOpacity
           style={{
             position: 'absolute',
-            left: windowWidth*0.82,
-            top: windowHeight*0.7,
+            left: windowWidth * 0.82,
+            top: windowHeight * 0.7,
           }}
-          onPress={() => {this.props.navigation.navigate('Post')}}
+          onPress={() => { this.props.navigation.navigate('Post') }}
         >
-          <Image 
+          <Image
             source={require('../../assets/images/addButton.png')}
-            style={{width: 50, height: 50}}
+            style={{ width: 50, height: 50 }}
             resizeMode='contain'
           />
         </TouchableOpacity>
@@ -151,7 +166,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
   },
-  searchView:{
+  searchView: {
     flexDirection: 'row',
     backgroundColor: '#E8E8E8',
     borderRadius: 30,

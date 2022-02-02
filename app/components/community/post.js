@@ -1,7 +1,7 @@
 import React, { Component, useCallback } from 'react';
-import { 
-  View, 
-  Text, 
+import {
+  View,
+  Text,
   Image,
   StyleSheet,
   ScrollView,
@@ -13,8 +13,8 @@ import {
   Keyboard
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import {ImagePicker, ImageOrVideo} from 'react-native-image-crop-picker';
-import {launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import { ImagePicker, ImageOrVideo } from 'react-native-image-crop-picker';
+import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { TouchableOpacity } from 'react-native-gesture-handler';
 
 const windowWidth = Dimensions.get('window').width;
@@ -36,6 +36,41 @@ class PostScreen extends Component {
       imageLink: '',
       uri: ''
     }
+  }
+
+  postfmdata = async () => {
+
+    console.log(this.state.imageLink.uri);
+
+    const fd = new FormData();
+    fd.append('file', {
+      name: 'picture.jpg',
+      type: 'image/jpeg',
+      uri: this.state.imageLink.uri
+    });
+    fd.append("content", this.state.content);
+    fd.append("title", this.state.title);
+    fd.append("drinkOwners", this.state.drinkOwners);
+    fd.append("rate", this.state.rate);
+    fd.append("writer", 2);
+    console.log();
+    await fetch(preURL.preURL + '/v1/post/review', {
+      method: 'POST',
+      body: fd,
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+    })
+      .then(response => response.json())
+      .then(json => {
+        console.log('리스트 받았다! ', json);
+
+
+      })
+      .catch(err => {
+        console.log('전송에 실패: ', err);
+      });
+
   }
 
   onChangeInput = (item, value) => {
@@ -63,12 +98,13 @@ class PostScreen extends Component {
     }
   }
 
-  
+
 
   render() {
     return (
+      <ScrollView>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : null }
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
         style={styles.container}
         enabled={true}
       >
@@ -80,19 +116,19 @@ class PostScreen extends Component {
                   value={this.state.recipeData.title}
                   placeholder='제목을 입력하세요'
                   placeholderTextColor='#BDBDBD'
-                  onSubmitEditing = {(event) => this.textHandler(event.nativeEvent.text)}
-                  onChange={value=>this.onChangeInput('title', value)}
+                  onSubmitEditing={(event) => this.textHandler(event.nativeEvent.text)}
+                  onChange={value => this.onChangeInput('title', value)}
                   editable={true}
                   style={styles.titleInput}
                 />
               </View>
               <View style={styles.inputView}>
-                <TextInput 
-                  value={this.state.recipeData.content} 
+                <TextInput
+                  value={this.state.recipeData.content}
                   placeholder='내용을 입력하세요'
                   placeholderTextColor='#BDBDBD'
                   // onSubmitEditing={(event)=>this.textHandler(event.nativeEvent.text)}
-                  onChange={value=>this.onChangeInput('content', value)}
+                  onChange={value => this.onChangeInput('content', value)}
                   editable={true}
                   multiline={true}
                   style={styles.contentInput}
@@ -101,10 +137,10 @@ class PostScreen extends Component {
               <View style={styles.imageButtonView}>
                 {/* TODO: 이미지 가져오는 버튼(갤러리, 카메라) */}
                 <TouchableOpacity
-                  onPress={()=>launchImageLibrary(options, response=>{
+                  onPress={() => launchImageLibrary(options, response => {
                     if (response.didCancel) {
                       console.log('User cancelled image picker');
-                    } else if (response.errorCode){
+                    } else if (response.errorCode) {
                       console.log('ImagePicker Error: ', response.errorCode);
                     } else {
                       this.setState({
@@ -132,14 +168,14 @@ class PostScreen extends Component {
                 // }
                 >
                   <View style={styles.imageButton}>
-                    <Icon name='images-outline' size={30} color='#fff'/>
+                    <Icon name='images-outline' size={30} color='#fff' />
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={()=>launchCamera(options, response=>{
+                  onPress={() => launchCamera(options, response => {
                     if (response.didCancel) {
                       console.log('User cancelled image picker');
-                    } else if (response.errorCode){
+                    } else if (response.errorCode) {
                       console.log('ImagePicker Error: ', response.errorCode);
                     } else {
                       this.setState({
@@ -152,17 +188,17 @@ class PostScreen extends Component {
                   })}
                 >
                   <View style={styles.imageButton}>
-                    <Icon name='camera-outline' size={30} color='#fff'/>
+                    <Icon name='camera-outline' size={30} color='#fff' />
                   </View>
                 </TouchableOpacity>
               </View>
-              {this.state.recipeData.uri ? (<Image 
+              {this.state.recipeData.uri ? (<Image
                 source={this.state.recipeData.uri}
-                style={{width: 300, height: 300,}}
+                style={{ width: 300, height: 300, }}
                 resizeMode='contain'
-              />) :  null}
+              />) : null}
               <TouchableOpacity
-                // TODO: 업로드 메소드 만들기
+              // TODO: 업로드 메소드 만들기
               >
                 <View style={styles.recipeUpload}>
                   <Text style={styles.recipeUploadText}>레시피 추가</Text>
@@ -172,6 +208,7 @@ class PostScreen extends Component {
           </View>
         </TouchableWithoutFeedback>
       </KeyboardAvoidingView>
+      </ScrollView>
     )
   }
 }
@@ -208,7 +245,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 10,
     alignItems: 'center',
-    width: windowWidth*0.25, 
+    width: windowWidth * 0.25,
     marginRight: 5
   },
   recipeUpload: {
@@ -223,5 +260,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   }
 })
+
 
 export default PostScreen;

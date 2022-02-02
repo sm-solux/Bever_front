@@ -14,6 +14,8 @@ class RecipeComponent extends Component {
         <RecipeStack.Screen name='RecipeList' component={RecipeList} options={{headerShown: false}}/>
         <RecipeStack.Screen name='Post' component={PostScreen} options={{headerShown: false}}/>
         <RecipeStack.Screen name='RecipeView' component={RecipeViewScreen}
+        // initialParams={{ 'key': 0, 'uri': '', 'title': '', 'date': '', 'writer': {}, 'rate': '' }}
+        initialParams={{ 'recipe': {} }}
           options={{headerTitle: 'Community',}}
         />
       </RecipeStack.Navigator>

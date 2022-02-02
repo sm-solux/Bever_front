@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-community/async-storage';
 import axios from "axios";
 import { preURL } from '../preURL';
 
-const userName = '눈송이';
+
 
 class HomeComponent extends Component {
   state = {
@@ -21,6 +21,7 @@ class HomeComponent extends Component {
     drinkList: [],
     drinkList2: [],
     rank:0,
+    userName:'',
   }
 
   onChangeText(value) {
@@ -32,6 +33,9 @@ class HomeComponent extends Component {
 
     // postServer(){
     // useEffect(() => {
+      AsyncStorage.getItem('userNickname').then((value) => {
+        this.setState({ userName:value })
+      });
 
     axios
       .get(preURL.preURL + '/v1/user/recommend/2')
@@ -167,7 +171,7 @@ class HomeComponent extends Component {
         </View>
 
         <View style={styles.menuContainer}>
-          <Text style={styles.menuTitle}>{userName} 님의 추천 메뉴</Text>
+          <Text style={styles.menuTitle}>{this.state.userName} 님의 추천 메뉴</Text>
           <ScrollView style={styles.scrollView} horizontal={true} showsHorizontalScrollIndicator={false}>
             {this.renderItems()}
 

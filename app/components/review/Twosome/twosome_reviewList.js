@@ -44,7 +44,14 @@ class TwosomeReviewList extends Component {
   }
 
   renderReviewItem = () => (
-    this.state.lists.reverse().map((review) => {
+    this.state.lists.reverse().filter((originList) =>{
+      if(this.state.searchValue == ""){
+        return originList;
+      }else if(originList.title.toLowerCase().includes(this.state.searchValue.toLowerCase())){
+        return originList;
+      }
+    }
+    ).map((review) => {
       let dates = review.date.replace('T', ' ');
       let writer = review.user.userEmail;
       console.log(writer);

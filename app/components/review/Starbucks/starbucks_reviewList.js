@@ -20,7 +20,12 @@ class StarbucksReviewList extends Component {
   }
 
   onSearch = () => {
-    // TODO: 검색하는 메소드 작성
+    // let ilist = this.state.lists;
+    // for(let i=0; i<ilist.length; i++){
+    //   if(ilist[i].title.includes(this.state.searchValue)||ilist[i].content.includes(this.state.searchValue)){
+    //     ilist
+    //   }
+    // }
   }
 
   componentDidMount() {
@@ -40,7 +45,14 @@ class StarbucksReviewList extends Component {
   }
 
   renderReviewItem = () => (
-    this.state.lists.reverse().map((review) => {
+    this.state.lists.reverse().filter((originList) =>{
+      if(this.state.searchValue == ""){
+        return originList;
+      }else if(originList.title.toLowerCase().includes(this.state.searchValue.toLowerCase())){
+        return originList;
+      }
+    }
+    ).map((review) => {
       let dates= review.date.replace('T', ' ');
       
       return (

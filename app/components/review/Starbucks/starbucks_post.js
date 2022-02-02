@@ -244,6 +244,8 @@ class StarbucksReviewPost extends Component {
   postfmdata = async () => {
 
     console.log( this.state.imageLink.uri);
+    let userid = 1;
+    AsyncStorage.getItem('userID').then((value) => { userid=value; console.log("userid:"+userid); }).catch((err)=>{console.log(err)});
 
     const fd = new FormData();
     fd.append('file', {
@@ -255,7 +257,7 @@ class StarbucksReviewPost extends Component {
     fd.append("title",this.state.title);
     fd.append("drinkOwners",this.state.drinkOwners);
     fd.append("rate",this.state.rate);
-    fd.append("writer", 2);
+    fd.append("writer", userid);
     console.log();
     await fetch(preURL.preURL + '/v1/post/review', {
       method: 'POST',

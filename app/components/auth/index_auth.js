@@ -62,7 +62,7 @@ class LoginScreen extends Component {
 
         if (response.data.emailNotExist == "true" || response.data.pwWrong) { Alert.alert('이메일 혹은 비밀번호가 틀렸습니다') }
         else {
-          AsyncStorage.setItem('userID', toString(response.data.userID)).then(() => {
+          AsyncStorage.setItem('userID', String(response.data.userID)).then(() => {
             console.log("로그인 set nm")
           });
           AsyncStorage.setItem('userNickname', response.data.nickname).then(() => {

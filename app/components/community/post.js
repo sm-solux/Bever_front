@@ -16,6 +16,10 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { ImagePicker, ImageOrVideo } from 'react-native-image-crop-picker';
 import { launchCamera, launchImageLibrary } from 'react-native-image-picker';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from "axios";
+import { preURL } from '../preURL';
+
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -40,7 +44,12 @@ class PostScreen extends Component {
 
   postfmdata = async () => {
 
-    console.log(this.state.imageLink.uri);
+    
+    console.log( this.state.imageLink);
+    let userid = 1;
+    AsyncStorage.getItem('userID')
+    .then((value) => { userid=value; console.log("userid:"+value); })
+    .catch((err)=>{console.log(err)});
 
     const fd = new FormData();
     fd.append('file', {
@@ -50,9 +59,7 @@ class PostScreen extends Component {
     });
     fd.append("content", this.state.content);
     fd.append("title", this.state.title);
-    fd.append("drinkOwners", this.state.drinkOwners);
-    fd.append("rate", this.state.rate);
-    fd.append("writer", 2);
+    fd.append("writer", userid);
     console.log();
     await fetch(preURL.preURL + '/v1/post/review', {
       method: 'POST',
@@ -198,7 +205,7 @@ class PostScreen extends Component {
                 resizeMode='contain'
               />) : null}
               <TouchableOpacity
-              // TODO: 업로드 메소드 만들기
+              onPress={()=>{this.postfmdata();}}
               >
                 <View style={styles.recipeUpload}>
                   <Text style={styles.recipeUploadText}>레시피 추가</Text>

@@ -85,7 +85,14 @@ class RecipeList extends Component {
 
   renderRecipeItem = () => (
 
-    this.state.lists.reverse().map((recipe) => {
+    this.state.lists.reverse().filter((originList) =>{
+      if(this.state.searchValue == ""){
+        return originList;
+      }else if(originList.title.toLowerCase().includes(this.state.searchValue.toLowerCase())){
+        return originList;
+      }
+    }
+    ).map((recipe) => {
 
       console.log(recipe);
       let dates= recipe.date.replace('T', ' ');

@@ -30,12 +30,17 @@ class HomeComponent extends Component {
     })
   }
   componentDidMount() {
+    
 
     // postServer(){
     // useEffect(() => {
       AsyncStorage.getItem('userNickname').then((value) => {
         this.setState({ userName:value })
       });
+      AsyncStorage.getItem('userID').then((value) => {
+        console.log(value);
+      });
+      
 
     axios
       .get(preURL.preURL + '/v1/user/recommend/2')
@@ -66,6 +71,11 @@ class HomeComponent extends Component {
   renderItems = () => (
     // TODO: TouchableOpacity onPress 함수 적용
     this.state.drinkList.map((drink) => {
+      let drinkname = drink.drinkName;
+      if(drink.drinkName.length >= 14){
+        drinkname= drink.drinkName.substr(0,11)+"..";
+
+      }
       return (
         <TouchableOpacity key={drink.drinkId}>
           <View style={styles.menuItem}>
@@ -79,7 +89,7 @@ class HomeComponent extends Component {
             <View style={{ marginTop: 10 }}>
               <View style={{ marginBottom: 7, marginLeft: 3 }}>
                 <Text style={styles.cafe}>{drink.drinkOwners}</Text>
-                <Text style={styles.cafe}>{drink.drinkName}</Text>
+                <Text style={styles.cafeName}>{drinkname}</Text>
               </View>
               {/* <Text style={styles.cafePrice}>4100원</Text> */}
             </View>
@@ -94,6 +104,11 @@ class HomeComponent extends Component {
   renderRankMenuItems = () =>(
 
     this.state.drinkList2.map((drink) => {
+      let drinkname =drink.drinkName;
+      if(drink.drinkName.length >= 14){
+        drinkname= drink.drinkName.substr(0,11)+"...";
+      }
+
       this.state.rank=this.state.rank+1;
       let source = '';
       if (this.state.rank === 1) {
@@ -126,7 +141,7 @@ class HomeComponent extends Component {
             <View style={{ marginTop: 10 }}>
               <View style={{ marginBottom: 7, marginLeft: 3 }}>
                 <Text style={styles.cafe}>{drink.drinkOwners}</Text>
-                <Text style={styles.cafe}>{drink.drinkName}</Text>
+                <Text style={styles.cafeName}>{drinkname}</Text>
               </View>
               {/* <Text style={styles.cafePrice}>4100원</Text> */}
             </View>
@@ -268,6 +283,10 @@ const styles = StyleSheet.create({
   },
   cafe: {
     fontSize: 13,
+    color: '#FC8621'
+  },
+  cafeName: {
+    fontSize: 10,
     color: '#FC8621'
   },
   cafePrice: {

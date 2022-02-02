@@ -9,12 +9,18 @@ import {
   TouchableOpacity
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from "axios";
+import { preURL } from '../preURL';
 
 const userName = '눈송이';
 
 class HomeComponent extends Component {
   state = {
     searchValue: '',
+    drinkList: [],
+    drinkList2: [],
+    rank:0,
   }
 
   onChangeText(value) {
@@ -22,6 +28,32 @@ class HomeComponent extends Component {
       searchValue: value
     })
   }
+  componentDidMount() {
+
+    // postServer(){
+    // useEffect(() => {
+
+    axios
+      .get(preURL.preURL + '/v1/user/recommend/2')
+      .then(res => {
+        this.setState({ drinkList: res.data.drinksDtoList });
+      })
+      .catch(err => {
+        console.log('에러 발생: ', err);
+      });
+
+    axios
+      .get(preURL.preURL + '/v1/user/recommend/2')
+      .then(res => {
+        this.setState({ drinkList2: res.data.drinksDtoList })
+      })
+      .catch(err => {
+        console.log('에러 발생: ', err);
+      });
+      
+    // }
+  }
+
 
   search(value) {
     // TODO: 검색하는 메소드 작성
@@ -29,65 +61,80 @@ class HomeComponent extends Component {
 
   renderItems = () => (
     // TODO: TouchableOpacity onPress 함수 적용
-    <TouchableOpacity>
-      <View style={styles.menuItem}>
-        <View style={styles.menuItemImageView}>
-          <Image
-            source={require('../../assets/images/starbucks.jpg')}
-            resizeMode='contain'
-            style={{width: 90, height: 90,}}
-          />
-        </View>
-        <View style={{marginTop: 5}}>
-          <View style={{marginBottom: 7, marginLeft: 3}}>
-            <Text style={styles.cafe}>스타벅스</Text>
-            <Text style={styles.cafe}>아이스아메리카노</Text>
-          </View>
-          {/* <Text style={styles.cafePrice}>4100원</Text> */}
-        </View>
-      </View>
-    </TouchableOpacity>
-  )
-
-  renderRankMenuItems = (rank) => {
-    let source='';
-    if (rank === 1) {
-      source=require('../../assets/images/rank1.png')
-    } else if (rank === 2) {
-      source=require('../../assets/images/rank2.png')
-    } else if (rank === 3) {
-      source=require('../../assets/images/rank3.png')
-    }
-
-    // TODO: TouchableOpacity onPress 함수 적용
-    return (
-      <TouchableOpacity>
-        {rank < 4 ? (
-          <Image 
-            source={source}
-            style={{width: 35, height: 35, position: 'absolute', zIndex: 1,}}
-          />
-        )
-        : null}
-        <View style={styles.menuItem}>
-          <View style={styles.menuItemImageView}>
-            <Image
-              source={require('../../assets/images/starbucks.jpg')}
-              resizeMode='contain'
-              style={{width: 90, height: 90,}}
-            />
-          </View>
-          <View style={{marginTop: 5}}>
-            <View style={{marginBottom: 7, marginLeft: 3}}>
-              <Text style={styles.cafe}>스타벅스</Text>
-              <Text style={styles.cafe}>아이스아메리카노</Text>
+    this.state.drinkList.map((drink) => {
+      return (
+        <TouchableOpacity key={drink.drinkId}>
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemImageView}>
+              <Image
+                source={{ uri: drink.drinkImageLink }}
+                resizeMode='contain'
+                style={{ width: 90, height: 90, }}
+              />
             </View>
-            {/* <Text style={styles.cafePrice}>4100원</Text> */}
+            <View style={{ marginTop: 10 }}>
+              <View style={{ marginBottom: 7, marginLeft: 3 }}>
+                <Text style={styles.cafe}>{drink.drinkOwners}</Text>
+                <Text style={styles.cafe}>{drink.drinkName}</Text>
+              </View>
+              {/* <Text style={styles.cafePrice}>4100원</Text> */}
+            </View>
           </View>
-        </View>
-      </TouchableOpacity>
+        </TouchableOpacity>
+      )
+    })
+
+  )
+  
+
+  renderRankMenuItems = () =>(
+
+    this.state.drinkList2.map((drink) => {
+      this.state.rank=this.state.rank+1;
+      let source = '';
+      if (this.state.rank === 1) {
+        source = require('../../assets/images/rank1.png')
+      } else if (this.state.rank === 2) {
+        source = require('../../assets/images/rank2.png')
+      } else if (this.state.rank === 3) {
+        source = require('../../assets/images/rank3.png')
+      }
+      let ids = drink.drinkId + "rank"+this.state.rank;
+      console.log(ids);
+      return (
+        <TouchableOpacity key={ids}>
+          {this.state.rank < 4 ? (
+            <Image
+              source={source}
+              style={{ width: 35, height: 35, position: 'absolute', zIndex: 1, }}
+            />
+          )
+            : null}
+
+          <View style={styles.menuItem}>
+            <View style={styles.menuItemImageView}>
+              <Image
+                source={{ uri: drink.drinkImageLink }}
+                resizeMode='contain'
+                style={{ width: 90, height: 90, }}
+              />
+            </View>
+            <View style={{ marginTop: 10 }}>
+              <View style={{ marginBottom: 7, marginLeft: 3 }}>
+                <Text style={styles.cafe}>{drink.drinkOwners}</Text>
+                <Text style={styles.cafe}>{drink.drinkName}</Text>
+              </View>
+              {/* <Text style={styles.cafePrice}>4100원</Text> */}
+            </View>
+          </View>
+
+
+
+        </TouchableOpacity>
+      )
+    }
     )
-  }
+  )
 
   renderRankItem = () => (
     // FIXME: map 함수로 rank 받아오기
@@ -119,27 +166,22 @@ class HomeComponent extends Component {
           </TouchableOpacity>
         </View>
 
-        <View style={styles.menuContainer}> 
+        <View style={styles.menuContainer}>
           <Text style={styles.menuTitle}>{userName} 님의 추천 메뉴</Text>
           <ScrollView style={styles.scrollView} horizontal={true} showsHorizontalScrollIndicator={false}>
             {this.renderItems()}
-            {this.renderItems()}
-            {this.renderItems()}
-            {this.renderItems()}
+
           </ScrollView>
         </View>
-        <View style={styles.line}/>
+        <View style={styles.line} />
 
         <View style={[styles.menuContainer]}>
           <Text style={styles.menuTitle}>인기 급상승 메뉴</Text>
           <ScrollView style={styles.scrollView} horizontal={true} showsHorizontalScrollIndicator={false}>
-            {this.renderRankMenuItems(1)}
-            {this.renderRankMenuItems(2)}
-            {this.renderRankMenuItems(3)}
-            {this.renderRankMenuItems(4)}
+            {this.renderRankMenuItems()}
           </ScrollView>
         </View>
-        <View style={styles.line}/>
+        <View style={styles.line} />
 
         <View style={[styles.menuContainer, {flex: 0.9}]}>
           <Text style={styles.menuTitle}>실시간 검색어 순위</Text>

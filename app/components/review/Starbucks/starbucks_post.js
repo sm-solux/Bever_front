@@ -6,6 +6,9 @@ import Icons from "react-native-vector-icons/Ionicons";
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import Stars from 'react-native-stars';
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from "axios";
+import { preURL } from '../../preURL';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -211,13 +214,13 @@ const starbucksItem = [
 class StarbucksReviewPost extends Component {
   state = {
     drinkID: [], 
-    writer: '', 
-    title: '', 
-    content: '', 
-    imageLink: '', 
+    writer: '',
+    title: '',
+    content: '',
     date: '',
-    rate: 0,
-    brand: 'starbucks',
+    rate: 2.5,
+    drinkOwners: 'STARBUCKS',
+    imageLink:''
   }
 
   onChangeTitle = (value) => {
@@ -236,6 +239,41 @@ class StarbucksReviewPost extends Component {
     this.setState({
       drinkID: selectedItems
     })
+  }
+  
+  postfmdata = async () => {
+
+    console.log( this.state.imageLink.uri);
+
+    const fd = new FormData();
+    fd.append('file', {
+      name: 'picture.jpg',
+      type: 'image/jpeg',
+      uri: this.state.imageLink.uri
+    });
+    fd.append("content",this.state.content);
+    fd.append("title",this.state.title);
+    fd.append("drinkOwners",this.state.drinkOwners);
+    fd.append("rate",this.state.rate);
+    fd.append("writer", 2);
+    console.log();
+    await fetch(preURL.preURL + '/v1/post/review', {
+      method: 'POST',
+      body: fd,
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+    })
+      .then(response => response.json())
+      .then(json => {
+        console.log('리스트 받았다! ', json);
+
+        
+      })
+      .catch(err => {
+        console.log('전송에 실패: ', err);
+      });
+
   }
 
   render() {
@@ -362,7 +400,7 @@ class StarbucksReviewPost extends Component {
               {/* 리뷰 포스트 버튼 */}
                 <TouchableOpacity 
                   // TODO: 업로드 메소드 만들기
-                  onPress={()=>{console.warn(this.state)}}
+                  onPress={()=>{console.warn(this.state); this.postfmdata();}}
                 >
                   <View style={styles.upload}><Text style={styles.uploadText}>리뷰 작성</Text></View>
                 </TouchableOpacity>

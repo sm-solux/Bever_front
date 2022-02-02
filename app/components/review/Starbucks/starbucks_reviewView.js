@@ -16,36 +16,50 @@ class StarbucksReviewView extends Component {
     date:"글 작성날짜",
     rate: 4.5,
   }
+  componentDidMount() {
+    console.log(this.props.route.params.key)
+    this.setState({
+      // writer:this.props.route.params.writer.userEmail,
+      title: this.props.route.params.title,
+      content: this.props.route.params.content,
+      imageLink: this.props.route.params.uri,
+      date: this.props.route.params.date,
+      rate: this.props.route.params.rate,
+    });
+    console.log(this.props.route.params.title);
+    console.log(this.state.title);
+  }
+
 
   render() {
     return (
       <View style={styles.contain}>
         <ScrollView>
-        {/* 게시글 제목 */}
+          {/* 게시글 제목 */}
           <View style={styles.titleView}>
-            <Text style={styles.title}>{this.state.title}</Text>
-            <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
+            <Text style={styles.title}>{this.props.route.params.title}</Text>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
               <Icon name='star' color='#FB5748' size={16} />
-              <Text style={{color:'#000', fontWeight:'600', marginLeft: 5}}>{this.state.rate.toFixed(1)}</Text>
+              <Text style={{ color: '#000', fontWeight: '600', marginLeft: 5 }}>{this.props.route.params.rate}</Text>
               <Text>/5.0</Text>
             </View>
-          </View>       
-          <Text style={styles.writer}>{this.state.writer}</Text>
-          <Text style={styles.date}>{this.state.date}</Text>
-          <View style={styles.line}></View> 
+          </View>
+          <Text style={styles.writer}>{this.props.route.params.user}</Text>
+          <Text style={styles.date}>{this.props.route.params.date}</Text>
+          <View style={styles.line}></View>
 
-        {/* 이미지 뷰 */}
+          {/* 이미지 뷰 */}
           {this.state.imageLink ? (
-            <View style={{alignItems: 'center', marginBottom: 10}}>
-              <Image 
-                source={this.state.imageLink}
-                style={{width: 300, height: 300, resizeMode: 'contain'}}
+            <View style={{ alignItems: 'center', marginBottom: 10 }}>
+              <Image
+                source={{uri: this.props.route.params.uri}}
+                style={{ width: 300, height: 300, resizeMode: 'contain' }}
               />
             </View>
           ) : null}
 
-        {/* 게시글 내용 */}
-          <Text style={styles.content}>{this.state.content}</Text>  
+          {/* 게시글 내용 */}
+          <Text style={styles.content}>{this.props.route.params.content}</Text>
         </ScrollView>
       </View>
     )

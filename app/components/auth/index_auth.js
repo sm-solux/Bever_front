@@ -9,6 +9,9 @@ import {
   TouchableOpacity
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from "axios";
+import { preURL } from '../../components/preURL';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -32,6 +35,47 @@ class LoginScreen extends Component {
     this.setState({
       pw: event,
     });
+  }
+
+  submitLogin = () => {
+
+    let data = {
+      email: this.state.email,
+      pw: this.state.pw,
+    };
+
+    axios({
+      headers: {
+        'content-type': 'application/json'
+      },
+      method: 'post',
+      url: `${preURL.preURL}/v1/user/login`,
+      params: data
+    })
+      .then((response) => {
+        console.log(response.data);
+
+        if (response.data.emailNotExist == "true" || response.data.pwWrong) { Alert.alert('이메일 혹은 비밀번호가 틀렸습니다') }
+        else {
+          AsyncStorage.setItem('userID', toString(response.data.userID)).then(() => {
+            console.log("로그인 set nm")
+          });
+          AsyncStorage.setItem('userNickname', response.data.nickname).then(() => {
+            console.log("로그인 set nm")
+          });
+          AsyncStorage.setItem('isLoggedIn', 'true').then(() => {
+            console.log("로그인 set 트루")
+          });
+          AsyncStorage.getItem('isLoggedIn')
+            .then((value) => {
+              if (value == 'true') this.props.navigation.navigate('Root', {screen: 'Main'});
+              // this.props.navigation.navigate('HomeStackComponent', screen= 'Main' );
+              // this.props.navigation.navigate('Home')
+            });
+        }
+      })
+      .catch((error) => error);
+
   }
 
   render() {
@@ -75,7 +119,8 @@ class LoginScreen extends Component {
         <TouchableOpacity
           onPress={()=>{
             // #TODO: 
-            this.props.navigation.navigate('Root', {screen: 'Main'})
+            this.submitLogin();
+            
           }}
         >
           <View style={styles.logInButton}>

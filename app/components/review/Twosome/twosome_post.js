@@ -6,6 +6,9 @@ import Icon from "react-native-vector-icons/Ionicons";
 import Icons from 'react-native-vector-icons/MaterialIcons';
 import Stars from 'react-native-stars';
 import SectionedMultiSelect from "react-native-sectioned-multi-select";
+import axios from "axios";
+import { preURL } from '../../preURL';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -117,7 +120,7 @@ class TwosomeReviewPost extends Component {
     imageLink: '', 
     date: '',
     rate: 0,
-    brand: 'twosome'
+    brand: 'TWOSOME' 
   }
 
   onChangeTitle = (value) => {
@@ -136,6 +139,47 @@ class TwosomeReviewPost extends Component {
     this.setState({
       drinkID: selectedItems
     })
+  }
+
+  postfmdata = async () => {
+
+    
+    let userid = 1;
+    AsyncStorage.getItem('userID').then((value) => { userid=value; console.log("userid:"+userid); }).catch((err)=>{console.log(err)});
+    
+
+    const fd = new FormData();
+    fd.append('file', {
+      name: 'picture.jpg',
+      type: 'image/jpeg',
+      uri: this.state.imageLink.uri
+    });
+    fd.append("content",this.state.content);
+    fd.append("title",this.state.title);
+    fd.append("drinkOwners",this.state.brand);
+    fd.append("rate",this.state.rate);
+    fd.append("writer", userid);
+    console.log();
+    await fetch(preURL.preURL + '/v1/post/review', {
+      method: 'POST',
+      body: fd,
+      headers: {
+        'content-type': 'multipart/form-data',
+      },
+      'Content-Type': 'application/json',
+        'Accept': 'application/json'
+    })
+      .then(response => response.json())
+      .then(json => {
+        console.log('리스트 받았다! ', json);
+        this.props.navigation.navigate('TwosomeReviewList');
+      })
+      .catch(err => {
+        console.log('전송에 실패: ', err);
+        if( err.indexOf("Success") !== -1 ) this.props.navigation.navigate('ReviewTwosome');
+        
+      });
+
   }
 
   render() {
@@ -262,7 +306,11 @@ class TwosomeReviewPost extends Component {
               {/* 리뷰 포스트 버튼 */}
                 <TouchableOpacity 
                   // TODO: 업로드 메소드 만들기
-                  onPress={()=>{console.warn(this.state)}}
+                  onPress={() => {
+                    console.warn(this.state);
+                    console.log("이미지:::"+this.state.imageLink.uri);
+                    this.postfmdata();
+                  }}
                 >
                   <View style={styles.upload}><Text style={styles.uploadText}>리뷰 작성</Text></View>
                 </TouchableOpacity>

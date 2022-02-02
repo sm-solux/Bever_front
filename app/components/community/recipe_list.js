@@ -14,6 +14,10 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import PostScreen from "./post";
 import RecipeView from "./recipe_view";
+import axios from "axios";
+import { preURL } from '../preURL';
+import AsyncStorage from '@react-native-community/async-storage';
+
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -28,8 +32,20 @@ class RecipeList extends Component {
       title: '이디야 토피넛 라떼 레시피 추천',
       content: '게시글 내용',
       date: '2022.01.07 11:23',
-      writer: 'abcde'
+      writer: 'abcde',
+      lists:[]
     }
+  }
+  componentDidMount() {
+    axios
+      .get(preURL.preURL + '/v1/recipe/list')
+      .then(res => {
+        this.setState({ lists: res.data.list })
+        console.log(this.state.lists);
+      })
+      .catch(err => {
+        console.log('에러 발생: ', err);
+      });
   }
 
   renderSearchBar = () => (

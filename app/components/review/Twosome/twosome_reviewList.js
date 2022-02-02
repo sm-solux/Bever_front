@@ -1,6 +1,9 @@
 import React, { Component } from "react";  
 import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, TextInput, ScrollView} from 'react-native';
 import Icon from "react-native-vector-icons/Ionicons";
+import axios from "axios";
+import { preURL } from '../../preURL';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -14,7 +17,8 @@ class TwosomeReviewList extends Component {
     imageLink:"게시글 이미지 존재 시 이미지 링크",
     date:"글 작성날짜",
     rate: 4.5,
-    searchValue: ''
+    searchValue: '',
+    lists:[]
   }
 
   onSearchValue = (input) => {
@@ -27,28 +31,51 @@ class TwosomeReviewList extends Component {
     // TODO: 검색하는 메소드 작성
   }
 
+  componentDidMount() {
+    axios
+      .get(preURL.preURL + '/v1/review/get/TWOSOME')
+      .then(res => {
+        this.setState({ lists: res.data.list })
+        console.log(this.state.lists);
+      })
+      .catch(err => {
+        console.log('에러 발생: ', err);
+      });
+  }
+
   renderReviewItem = () => (
-    <TouchableOpacity
-      onPress={()=>this.props.navigation.navigate('TwosomeReviewView')}
-    >
-      <View style={styles.reviewItemView}>
-        <Image 
-          source={require('../../../assets/images/twosome.jpg')}
-          style={{width: 75, height: 75, resizeMode: 'contain'}}
-        />
-        <View style={{flex: 2.5}}>
-          <Text style={styles.titleText}>{this.state.title}</Text>
-          <Text style={styles.writerText}>{this.state.writer} {this.state.date}</Text>
-          <View style={styles.drinkView}><Text style={styles.drinkText}>{this.state.drinkID}</Text></View>
-        </View>
-        <View style={{borderRightColor: '#e8e8e8', borderRightWidth: 1}}></View>
-        <View style={{flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center'}}>
-          <Icon name='star' color='#FB5748' size={16} />
-          <Text style={{color:'#000', fontWeight:'600', marginLeft: 5}}>{this.state.rate.toFixed(1)}</Text>
-          <Text>/5.0</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+    this.state.lists.reverse().map((review) => {
+      let dates = review.date.replace('T', ' ');
+      let writer = review.user.userEmail;
+      console.log(writer);
+      
+      return (
+        <TouchableOpacity
+          onPress={() => {this.props.navigation.navigate('TwosomeReviewView',
+          {key:review.reviewID, uri:review.imageLink, title:review.title, date:dates, writer:review.user, rate:review.rate, content:review.content})
+        }}
+          
+        >
+          <View style={styles.reviewItemView}>
+            <Image
+              source={{ uri: review.imageLink }}
+              style={{ width: 75, height: 75, resizeMode: 'contain' }}
+            />
+            <View style={{ flex: 2.5 }}>
+              <Text style={styles.titleText}>{review.title}</Text>
+              <Text style={styles.writerText}>{dates}</Text>
+              <View style={styles.drinkView}><Text style={styles.drinkText}>{review.user.uesrID}</Text></View>
+            </View>
+            <View style={{ borderRightColor: '#e8e8e8', borderRightWidth: 1 }}></View>
+            <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+              <Icon name='star' color='#FB5748' size={16} />
+              <Text style={{ color: '#000', fontWeight: '600', marginLeft: 5 }}>{review.rate}</Text>
+              <Text>/5.0</Text>
+            </View>
+          </View>
+        </TouchableOpacity>
+      )
+    })
   )
 
   render() {
@@ -72,15 +99,6 @@ class TwosomeReviewList extends Component {
 
       {/* 게시글 목록 뷰 */}
         <ScrollView>
-          {this.renderReviewItem()}
-          {this.renderReviewItem()}
-          {this.renderReviewItem()}
-          {this.renderReviewItem()}
-          {this.renderReviewItem()}
-          {this.renderReviewItem()}
-          {this.renderReviewItem()}
-          {this.renderReviewItem()}
-          {this.renderReviewItem()}
           {this.renderReviewItem()}
         </ScrollView>
 

@@ -11,11 +11,12 @@ class ReviewStarbucks extends Component {
   render() {
     return (
       <StarbucksStack.Navigator>
-        <StarbucksStack.Screen name='StarbucksReviewList' component={StarbucksReviewList} 
-          options={{headerShown: false}}/>
-        <StarbucksStack.Screen name='StarbucksReviewView' component={StarbucksReviewView} 
-          options={{headerTitle: '목록보기', headerStyle: {height: 30}, headerTitleStyle: {fontSize: 18}}}/>
-        <StarbucksStack.Screen name='StarbucksReviewPost' component={StarbucksReviewPost} options={{headerShown: false}}/>
+        <StarbucksStack.Screen name='StarbucksReviewList' component={StarbucksReviewList}
+          options={{ headerShown: false }} />
+        <StarbucksStack.Screen name='StarbucksReviewView' component={StarbucksReviewView}
+          initialParams={{ 'key': 0, 'uri': '', 'title': '', 'date': '', 'writer': {}, 'rate': '' }}
+          options={{ headerTitle: '목록보기', headerStyle: { height: 30 }, headerTitleStyle: { fontSize: 18 } }} />
+        <StarbucksStack.Screen name='StarbucksReviewPost' component={StarbucksReviewPost} options={{ headerShown: false }} />
       </StarbucksStack.Navigator>
     )
   }

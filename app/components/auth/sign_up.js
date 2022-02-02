@@ -3,6 +3,9 @@ import {
   View, Text, StyleSheet, TouchableOpacity, Dimensions, TextInput, Alert
 } from 'react-native';
 import Icon from "react-native-vector-icons/Ionicons";
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from "axios";
+import { preURL } from '../../components/preURL';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -11,6 +14,7 @@ class SignUp extends Component {
   state = {
     email: '',
     emailCheck: '',
+    nickname: '',
     pw: '',
     pwCheck: '',
     btnClicked: false,
@@ -21,6 +25,11 @@ class SignUp extends Component {
   onChangeEmail = event => {
     this.setState({
       email: event,
+    })
+  }
+  onChangeNM = event => {
+    this.setState({
+      nickname: event,
     })
   }
   onChangePw = event => {
@@ -55,8 +64,40 @@ class SignUp extends Component {
   }
 
   onRegister = () => {
-    if (this.state.emailCheck==='usable'&&this.state.pwSame===true){
-      this.props.navigation.navigate('RegisterComplete')
+    if (this.state.emailCheck === 'usable' && this.state.pwSame === true) {
+      console.log(this.state.email);
+      console.log(this.state.pw);
+      console.log(this.state.nickname);
+      let data = {
+        email: this.state.email,
+        pw: this.state.pw,
+        nickname: this.state.nickname
+      };
+
+      const request = axios({
+        headers: {
+          'content-type': 'application/json'
+        },
+        method: 'post',
+        url: `${preURL.preURL}/v1/user/save`,
+        params: data
+      })
+        .then((response) => {
+          if(response.data.alreadyExist!=null) Alert.alert('이메일이 이미 존재합니다'); 
+          console.log(response.data);
+          AsyncStorage.setItem('userID', toString( response.data.userID) ).then(() => {
+            console.log("로그인 set nm")
+          });
+          AsyncStorage.setItem('userNickname', response.data.nickname).then(() => {
+            console.log("로그인 set nm")
+          });
+          
+          
+
+          this.props.navigation.navigate('RegisterComplete')
+        })
+        .catch((error) => error);
+
     } else {
       Alert.alert('이메일과 비밀번호를 확인해주세요.')
     }
@@ -76,58 +117,67 @@ class SignUp extends Component {
               keyboardType='email-address'
             />
             <TouchableOpacity
-              onPress={()=>this.onCheckEmail()}
+              onPress={() => this.onCheckEmail()}
             >
               <Text style={styles.button}>중복확인</Text>
             </TouchableOpacity>
           </View>
-          {this.state.btnClicked ? 
-            <View style={{flexDirection: 'row'}}>
-              <Icon 
-                name={this.state.emailCheck==='usable' ? 'checkmark-circle-outline':'close-circle-outline'}
+          {this.state.btnClicked ?
+            <View style={{ flexDirection: 'row' }}>
+              <Icon
+                name={this.state.emailCheck === 'usable' ? 'checkmark-circle-outline' : 'close-circle-outline'}
                 size={15}
-                color={this.state.emailCheck==='usable' ? '#00dd00' : '#FE2E2E'}
+                color={this.state.emailCheck === 'usable' ? '#00dd00' : '#FE2E2E'}
               />
-              {this.state.emailCheck==='usable' ? <Text style={{fontSize: 12, color:'#00dd00'}}>사용 가능한 이메일입니다.</Text> :
-              <Text style={{fontSize: 12, color:'#FE2E2E'}}>이미 사용 중인 이메일입니다.</Text>}
-            </View> 
+              {this.state.emailCheck === 'usable' ? <Text style={{ fontSize: 12, color: '#00dd00' }}>사용 가능한 이메일입니다.</Text> :
+                <Text style={{ fontSize: 12, color: '#FE2E2E' }}>이미 사용 중인 이메일입니다.</Text>}
+            </View>
             : null
           }
         </View>
         <View style={styles.input}>
+          <Text style={styles.text}>닉네임</Text>
+          <TextInput style={[styles.textInput, { width: windowWidth * 0.83 }]}
+            value={this.state.nickname}
+            onChangeText={this.onChangeNM}
+            placeholder="닉네임"
+
+          />
+        </View>
+        <View style={styles.input}>
           <Text style={styles.text}>비밀번호</Text>
-          <TextInput style={[styles.textInput,{width: windowWidth*0.83}]} 
+          <TextInput style={[styles.textInput, { width: windowWidth * 0.83 }]}
             value={this.state.pw}
             onChangeText={this.onChangePw}
             placeholder="비밀번호"
             secureTextEntry={true}
-            />
+          />
         </View>
         <View style={styles.input}>
           <Text style={styles.text}>비밀번호 확인</Text>
-          <TextInput style={[styles.textInput,{width: windowWidth*0.83}]} 
+          <TextInput style={[styles.textInput, { width: windowWidth * 0.83 }]}
             value={this.state.pwCheck}
             onChangeText={this.onChangePwCheck}
             placeholder="비밀번호 확인"
             secureTextEntry={true}
-            onEndEditing={()=>this.onCheckPw()}
+            onEndEditing={() => this.onCheckPw()}
           />
-          {this.state.pwCheckAlert ? 
-            <View style={{flexDirection: 'row'}}>
-            <Icon 
-              name={this.state.pwSame ? 'checkmark-circle-outline':'close-circle-outline'}
-              size={15}
-              color={this.state.pwSame ? '#00dd00' : '#FE2E2E'}
-            />
-            {this.state.pwSame ? <Text style={{fontSize: 12, color:'#00dd00'}}>일치합니다.</Text> :
-            <Text style={{fontSize: 12, color:'#FE2E2E'}}>일치하지 않습니다.</Text>}
-          </View>
+          {this.state.pwCheckAlert ?
+            <View style={{ flexDirection: 'row' }}>
+              <Icon
+                name={this.state.pwSame ? 'checkmark-circle-outline' : 'close-circle-outline'}
+                size={15}
+                color={this.state.pwSame ? '#00dd00' : '#FE2E2E'}
+              />
+              {this.state.pwSame ? <Text style={{ fontSize: 12, color: '#00dd00' }}>일치합니다.</Text> :
+                <Text style={{ fontSize: 12, color: '#FE2E2E' }}>일치하지 않습니다.</Text>}
+            </View>
             : null
           }
         </View>
-        <View style={{marginTop: 20}}>
+        <View style={{ marginTop: 20 }}>
           <TouchableOpacity
-            onPress={()=>this.onRegister()}
+            onPress={() => this.onRegister()}
           >
             <Text style={styles.registerBtn}>회원가입</Text>
           </TouchableOpacity>

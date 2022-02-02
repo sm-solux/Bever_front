@@ -13,6 +13,8 @@ import Icon from 'react-native-vector-icons/Ionicons';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
+// export let isLoggedIn = false;
+
 class LoginScreen extends Component {
   state = {
     keepLogIn: false,
@@ -72,7 +74,8 @@ class LoginScreen extends Component {
         </View>
         <TouchableOpacity
           onPress={()=>{
-            // #TODO: 로그인 함수만들기
+            // #TODO: 
+            this.props.navigation.navigate('Root', {screen: 'Main'})
           }}
         >
           <View style={styles.logInButton}>

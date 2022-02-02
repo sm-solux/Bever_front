@@ -22,6 +22,7 @@ import MyPage from './components/myPage/index_myp';
 // Logo
 import LogoTitle from './utils/logo';
 
+// import { isLoggedIn } from './components/auth/index_auth';
 // Icon
 import Icon from 'react-native-vector-icons/Ionicons';
 import { create } from 'react-test-renderer';
@@ -35,8 +36,6 @@ const ReviewStack = createStackNavigator();
 const CommunityStack = createStackNavigator();
 const CalendarStack = createStackNavigator();
 // const MyPageStack = createStackNavigator();
-
-const isLoggedIn = true;
 
 
 const TabBarIcon = (focused, name) => {
@@ -134,12 +133,14 @@ export const RootNavigator = () => {
         title: <LogoTitle />
       }}
     >
-      { isLoggedIn ? (
+      <AuthStack.Screen name="SignIn" component={AuthComponent} options={{headerShown: false}}/>
+      <AuthStack.Screen name="Main" component={AppTabComponent} />
+      {/* { isLoggedIn ? (
         <AuthStack.Screen name="Main" component={AppTabComponent} />
       ) : (
         <AuthStack.Screen name="SignIn" component={AuthComponent} options={{headerShown: false}}/>
       )
-      }
+      } */}
     </AuthStack.Navigator>
   )
 }

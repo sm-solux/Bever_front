@@ -6,6 +6,7 @@ import FindID from './find_id';
 import FindPW from './find_pw';
 import SignUp from './sign_up';
 import RegisterComplete from './register_complete';
+import { RootNavigator } from '../../routes';
 
 const AuthStack = createStackNavigator();
 
@@ -18,6 +19,7 @@ class AuthComponent extends Component {
         <AuthStack.Screen name='FindPW' component={FindPW} options={{headerShown: false}}/> */}
         <AuthStack.Screen name='SignUp' component={SignUp} options={{headerTitle: '회원가입', headerTitleAlign: 'center'}}/>
         <AuthStack.Screen name='RegisterComplete' component={RegisterComplete} options={{headerTitle: '회원가입 완료', headerTitleAlign: 'center'}}/>
+        <AuthStack.Screen name='Root' component={RootNavigator} options={{headerShown: false}}/>
       </AuthStack.Navigator>
     )
   }

@@ -38,7 +38,7 @@ class HomeComponent extends Component {
             style={{width: 90, height: 90,}}
           />
         </View>
-        <View style={{marginTop: 10}}>
+        <View style={{marginTop: 5}}>
           <View style={{marginBottom: 7, marginLeft: 3}}>
             <Text style={styles.cafe}>스타벅스</Text>
             <Text style={styles.cafe}>아이스아메리카노</Text>
@@ -77,7 +77,7 @@ class HomeComponent extends Component {
               style={{width: 90, height: 90,}}
             />
           </View>
-          <View style={{marginTop: 10}}>
+          <View style={{marginTop: 5}}>
             <View style={{marginBottom: 7, marginLeft: 3}}>
               <Text style={styles.cafe}>스타벅스</Text>
               <Text style={styles.cafe}>아이스아메리카노</Text>
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     paddingRight: 5
   },
   line: {
-    marginVertical: 20,
+    marginBottom: 3,
     borderBottomColor: '#ccc',
     borderBottomWidth: 1,
   }

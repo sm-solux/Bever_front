@@ -1,6 +1,6 @@
 import React, { Component } from "react";  
 import { View, Text, StyleSheet, TextInput, ScrollView, Image,
-  Dimensions, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, TouchableOpacity} from 'react-native';
+  Dimensions, KeyboardAvoidingView, TouchableWithoutFeedback, Keyboard, TouchableOpacity, Modal, FlatList} from 'react-native';
 import { launchCamera, launchImageLibrary } from "react-native-image-picker";
 import Icon from "react-native-vector-icons/Ionicons";
 import Icons from 'react-native-vector-icons/MaterialIcons';
@@ -9,6 +9,8 @@ import SectionedMultiSelect from "react-native-sectioned-multi-select";
 import axios from "axios";
 import { preURL } from '../../preURL';
 import AsyncStorage from '@react-native-community/async-storage';
+import { starbucksItem, twosomeItem } from "../../calendar/Item";
+import MIcons from 'react-native-vector-icons/MaterialIcons';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -19,108 +21,90 @@ const options = {
   includeBase64: false,
   maxWidth: 300,
   maxHeight: 300,
-};
+}
+const countColor = ['#fc862133', '#fc862166', '#fc862199', '#fc8621cc', '#fc8621'];
 
-const twosomeItem = [
-  {
-    name: '에스프레소 베리에이션',
-    id: 40000,
-    children: [
-      { name: '아메리카노', id: 4000000},
-      { name: '카페라떼', id: 4000001},
-      { name: '카페모카', id: 4000002},
-      { name: '카라멜마키아또', id: 4000003},
-      { name: '카푸치노', id: 4000004},
-      { name: '바닐라카페라떼', id: 4000005},
-      { name: '숏카페라떼', id: 4000006},
-      { name: '롱블랙', id: 4000007},
-      { name: '에스프레소', id: 4000008},
-      { name: '스페니쉬연유카페라떼', id: 4000009},
-      { name: '아이스크림카페라떼', id: 4000010},
-      { name: '달고나카페라떼', id: 4000011},
-      { name: '콜드브루', id: 4000012},
-      { name: '콜드브루라떼', id: 4000013},
-      { name: '흑임자카페라떼', id: 4000014},
-    ]
-  },
-  {
-    name: '티 베리에이션',
-    id: 40001,
-    children: [
-      { name: '잉글리쉬브렉퍼스트', id: 4000100},
-      { name: '제주유기농녹차', id: 4000101},
-      { name: '1837블랙티', id: 4000102},
-      { name: '카모마일', id: 4000103},
-      { name: '크림카라멜', id: 4000104},
-      { name: '프렌치얼그레이', id: 4000105},
-      { name: '그나와민트티', id: 4000106},
-      { name: '애플민트티', id: 4000107},
-      { name: '허니레몬티', id: 4000108},
-      { name: '유자레몬티', id: 4000109},
-      { name: '오렌지자몽티', id: 4000110},
-      { name: '로얄밀크티', id: 4000111},
-      { name: '그린티라떼', id: 4000112},
-      { name: '아이스버블밀크티', id: 4000113},
-      { name: '아이스버블그린티라떼', id: 4000114},
-    ]
-  },
-  {
-    name: '음료',
-    id: 40002,
-    children: [
-      { name: '치즈크럼블딸기쉐이크', id: 4000200},
-      { name: '생딸기가득주스', id: 4000201},
-      { name: '스트로베리초콜릿프라페', id: 4000202},
-      { name: '스트로베리라떼', id: 4000203},
-      { name: '민트초코프라페', id: 4000204},
-      { name: '샤인머스캣청포도에이드', id: 4000205},
-      { name: '복숭아에이드', id: 4000206},
-      { name: '쑥라떼', id: 4000207},
-      { name: '고구마라떼', id: 4000208},
-      { name: '모카칩커피프라페', id: 4000209},
-      { name: '카라멜커피프라페', id: 4000210},
-      { name: '스트로베리피치프라페', id: 4000211},
-      { name: '요거트프라페', id: 4000212},
-      { name: '망고프라페', id: 4000213},
-      { name: '제주말차프라페', id: 4000214},
-      { name: '바닐라밀크쉐이크', id: 4000215},
-      { name: '초코밀크쉐이크', id: 4000216},
-      { name: '커피밀크쉐이크', id: 4000217},
-      { name: '로얄밀크티쉐이크', id: 4000218},
-      { name: '자몽에이드', id: 4000219},
-      { name: '오렌지에이드', id: 4000220},
-      { name: '레몬셔벗에이드', id: 4000221},
-      { name: '샹그리아에이드', id: 4000222},
-      { name: '오렌지자몽주스', id: 4000223},
-      { name: '키위바나나주스', id: 4000224},
-      { name: '망고바나나라떼', id: 4000225},
-      { name: '블루베리요거트드링크', id: 4000226},
-      { name: '플레인요거트드링크', id: 4000227},
-      { name: '초콜릿라떼', id: 4000228},
-    ]
-  },
-  {
-    name: '아이스크림',
-    id: 40003,
-    children: [
-      { name: '컵)소프트아이스크림', id: 4000300},
-      { name: '콘)소프트아이스크림', id: 4000301},
-      { name: '바닐라아포가토', id: 4000302},
-      { name: '밀크소프트아포가토', id: 4000303},
-    ]
-  },
+const cafeList = [
+  { name: '카페', id: 0, children: [{ name: '스타벅스', id: 1000 }, { name: '투썸', id: 2000 }] }
 ]
+
+let userID = null;
 
 class TwosomeReviewPost extends Component {
   state = {
-    drinkID: [], 
-    writer: '', 
-    title: '', 
-    content: '', 
-    imageLink: '', 
+    writer: '',
+    title: '',
+    content: '',
     date: '',
-    rate: 0,
-    brand: 'TWOSOME' 
+    rate: 2.5,
+    drinkOwners: 'STARBUCKS',
+    imageLink: '',
+    cafeName: [],
+    drinkList: starbucksItem,
+    drinkID: [],
+    selectedList: [],
+    modalVisible: false,
+  }
+  componentDidMount(){
+    AsyncStorage.getItem('userID').then((value) => {
+      this.setState({writer:value}); 
+    })
+  }
+
+  findList = (element) => {
+    if (element.date.substring(0, 10) === this.state.selectedDate) {
+      return true;
+    }
+  }
+
+  onDateChange = (date) => {
+    this.setState({
+      selectedDate: date.toISOString().substring(0, 10)
+    }, () => {
+      let subList = [];
+      subList = this.state.List.filter(this.findList);
+      this.setState({
+        selectedList: subList,
+        selectedFlag: true,
+      })
+    })
+  }
+
+  setModalVisible = (visible) => {
+    this.setState({ modalVisible: visible });
+  }
+
+  onChangeCafe = (value) => {
+    this.setState({
+      cafeName: value
+    })
+  }
+
+  onChangeDrinkDate = (value) => {
+    this.setState({
+      drinkDate: value
+    })
+  }
+
+  onSelectedCafeChange = (selectedItems) => {
+    this.setState({
+      cafeName: selectedItems,
+    }, () => {
+      if (this.state.cafeName == 1000) {
+        this.setState({ drinkList: starbucksItem, drinkOwners: 'STARBUCKS'});
+        
+      }
+      else if (this.state.cafeName == 2000) {
+        this.setState({ drinkList: twosomeItem, drinkOwners: 'TWOSOME' })
+      }
+    })
+
+  }
+
+  onSelectedItemsChange = (selectedItems) => {
+    this.setState({
+      drinkID: selectedItems
+    })
   }
 
   onChangeTitle = (value) => {
@@ -142,11 +126,8 @@ class TwosomeReviewPost extends Component {
   }
 
   postfmdata = async () => {
-
     
-    let userid = 1;
-    AsyncStorage.getItem('userID').then((value) => { userid=value; console.log("userid:"+userid); }).catch((err)=>{console.log(err)});
-    
+    let drink = this.state.drinkID;
 
     const fd = new FormData();
     fd.append('file', {
@@ -154,45 +135,67 @@ class TwosomeReviewPost extends Component {
       type: 'image/jpeg',
       uri: this.state.imageLink.uri
     });
-    fd.append("content",this.state.content);
-    fd.append("title",this.state.title);
-    fd.append("drinkOwners",this.state.brand);
-    fd.append("rate",this.state.rate);
-    fd.append("writer", userid);
-    console.log();
+    fd.append("content", this.state.content);
+    fd.append("title", this.state.title);
+    fd.append("drinkOwners", this.state.drinkOwners);
+    fd.append("rate", this.state.rate);
+    fd.append("writer", this.state.writer);
+    fd.append("drinkID", drink[0]);
+
     await fetch(preURL.preURL + '/v1/post/review', {
       method: 'POST',
       body: fd,
       headers: {
         'content-type': 'multipart/form-data',
       },
-      'Content-Type': 'application/json',
-        'Accept': 'application/json'
     })
       .then(response => response.json())
       .then(json => {
         console.log('리스트 받았다! ', json);
-        this.props.navigation.navigate('TwosomeReviewList');
       })
       .catch(err => {
+        if(String(err).includes("Success")){ this.props.navigation.goBack();}
         console.log('전송에 실패: ', err);
-        if( err.indexOf("Success") !== -1 ) this.props.navigation.navigate('ReviewTwosome');
-        
+
       });
 
   }
 
   render() {
+    const { modalVisible } = this.state;
+
+    if (this.state.flag) {
+      this.getList();
+    }
+
+    let flatlist = null;
+    if (this.state.selectedFlag) {
+      flatlist =
+        <FlatList
+          data={this.state.selectedList}
+          renderItem={this.renderItem}
+          keyExtractor={item => item.calendarID}
+        />
+    }
+    else {
+      flatlist =
+        <FlatList
+          data={this.state.List}
+          renderItem={this.renderItem}
+          keyExtractor={item => item.calendarID}
+        />
+    }
     return (
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : null}
         style={styles.container}
         enabled={true}
       >
+
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View>
             <ScrollView>
-            {/* 제목 입력란 */}
+              {/* 제목 입력란 */}
               <View style={styles.titleView}>
                 <Text style={styles.titleText}>제목</Text>
                 <TextInput
@@ -203,51 +206,73 @@ class TwosomeReviewPost extends Component {
                   onChangeText={this.onChangeTitle}
                 />
               </View>
-            
-            {/* 음료 입력란 */}
-              <View style={[styles.titleView, {alignItems: 'flex-start'}]}>
-                <Text style={styles.titleText}>음료</Text>
-                <View style={{flex:1}}>
-                  <SectionedMultiSelect
-                    items={twosomeItem}
-                    IconRenderer={Icons}
-                    uniqueKey="id"
-                    subKey="children"
-                    selectText="음료를 선택하세요"
-                    showDropDowns={true}
-                    readOnlyHeadings={true}
-                    onSelectedItemsChange={this.onSelectedItemsChange}
-                    selectedItems={this.state.drinkID}
-                    single={true}
-                  />
+
+              {/* 음료 입력란 */}
+              <View style={[styles.titleView, { alignItems: 'flex-start' }]}>
+                <View style={styles.inputView}>
+                  <Text style={styles.titleText}>카페</Text>
+                  <View style={{ flex: 1 }}>
+                    <SectionedMultiSelect
+                      items={cafeList}
+                      IconRenderer={MIcons}
+                      uniqueKey="id"
+                      subKey="children"
+                      selectText="카페를 선택하세요"
+                      showDropDowns={true}
+                      readOnlyHeadings={true}
+                      onSelectedItemsChange={this.onSelectedCafeChange}
+                      selectedItems={this.state.cafeName}
+                      single={true}
+                    />
+                  </View>
                 </View>
               </View>
 
-            {/* 별점 입력란 */}
+              <View style={[styles.titleView, { alignItems: 'flex-start' }]}>
+                <View style={styles.inputView}>
+                  <Text style={styles.titleText}>메뉴</Text>
+                  <View style={{ flex: 1 }}>
+                    <SectionedMultiSelect
+                      items={this.state.drinkList}
+                      IconRenderer={MIcons}
+                      uniqueKey="id"
+                      subKey="children"
+                      selectText="음료를 선택하세요"
+                      showDropDowns={true}
+                      readOnlyHeadings={true}
+                      onSelectedItemsChange={this.onSelectedItemsChange}
+                      selectedItems={this.state.drinkID}
+                      single={true}
+                    />
+                  </View>
+                </View>
+              </View>
+
+              {/* 별점 입력란 */}
               <View style={styles.titleView}>
                 <Text style={styles.titleText}>별점</Text>
                 <View>
-                  <Stars 
+                  <Stars
                     half={true}
                     default={0}
-                    update={(value)=>this.setState({rate: value})}
+                    update={(value) => this.setState({ rate: value })}
                     spacing={4}
                     starSize={40}
                     count={5}
-                    fullStar={<Icon name='star-sharp' style={styles.stars}/>}
-                    halfStar={<Icon name='star-half-sharp' style={styles.stars}/>}
-                    emptyStar={<Icon name='star-outline' style={styles.stars}/>}
+                    fullStar={<Icons name='star-sharp' style={styles.stars} />}
+                    halfStar={<Icons name='star-half-sharp' style={styles.stars} />}
+                    emptyStar={<Icons name='star-outline' style={styles.stars} />}
                   />
                 </View>
               </View>
 
-            {/* 내용 입력란 */}
-              <View style={[styles.titleView, {alignItems: 'flex-start'}]}>
+              {/* 내용 입력란 */}
+              <View style={[styles.titleView, { alignItems: 'flex-start' }]}>
                 <Text style={styles.titleText}>내용</Text>
-                <TextInput  
+                <TextInput
                   value={this.state.content}
                   style={styles.contentInput}
-                  multiline={true} 
+                  multiline={true}
                   textAlignVertical='top'
                   placeholder="내용을 입력하세요"
                   placeholderTextColor='#bdbdbd'
@@ -257,63 +282,59 @@ class TwosomeReviewPost extends Component {
               </View>
 
               {/* 이미지 추가 */}
-                <View style={styles.titleView}>
-                  <Text style={styles.titleText}>사진</Text>
-                  <View style={{flexDirection: 'row'}}>
-                    <TouchableOpacity
-                      onPress={()=>launchImageLibrary(options, response=>{
-                        if (response.didCancel) {
-                          console.log('User cancelled image picker');
-                        } else if (response.errorCode){
-                          console.log('ImagePicker Error: ', response.errorCode);
-                        } else {
-                          this.setState({
+              <View style={styles.titleView}>
+                <Text style={styles.titleText}>사진</Text>
+                <View style={{ flexDirection: 'row' }}>
+                  <TouchableOpacity
+                    onPress={() => launchImageLibrary(options, response => {
+                      if (response.didCancel) {
+                        console.log('User cancelled image picker');
+                      } else if (response.errorCode) {
+                        console.log('ImagePicker Error: ', response.errorCode);
+                      } else {
+                        this.setState({
+                          ...this.state,
+                          imageLink: response.assets[0],
+                        })
+                      }
+                    })}
+                  ><View style={styles.imageButton}>
+                      <Icon name='image-outline' size={30} color='#fea82f' />
+                    </View></TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => launchCamera(options, response => {
+                      if (response.didCancel) {
+                        console.log('User cancelled image picker');
+                      } else if (response.errorCode) {
+                        console.log('ImagePicker Error: ', response.errorCode);
+                      } else {
+                        this.setState({
+                          recipeData: {
                             ...this.state,
                             imageLink: response.assets[0],
-                          })
-                        }
-                      })}
-                    ><View style={styles.imageButton}>
-                      <Icon name='image-outline' size={30} color='#fea82f'/>
+                          }
+                        })
+                      }
+                    })}
+                  ><View style={styles.imageButton}>
+                      <Icon name='camera-outline' size={30} color='#fea82f' />
                     </View></TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={()=>launchCamera(options, response=>{
-                        if (response.didCancel) {
-                          console.log('User cancelled image picker');
-                        } else if (response.errorCode){
-                          console.log('ImagePicker Error: ', response.errorCode);
-                        } else {
-                          this.setState({
-                            recipeData: {
-                              ...this.state,
-                              imageLink: response.assets[0],
-                            }
-                          })
-                        }
-                      })}
-                    ><View style={styles.imageButton}>
-                      <Icon name='camera-outline' size={30} color='#fea82f'/>
-                    </View></TouchableOpacity>
-                  </View>
                 </View>
-                <View style={{marginLeft: 50, marginBottom: 10}}>
-                  {this.state.imageLink ? (<Image 
-                    source={this.state.imageLink}
-                    style={{width: 200, height: 200, resizeMode: 'contain'}}
-                  />) : null }
-                </View>
+              </View>
+              <View style={{ marginLeft: 50, marginBottom: 10 }}>
+                {this.state.imageLink ? (<Image
+                  source={this.state.imageLink}
+                  style={{ width: 200, height: 200, resizeMode: 'contain' }}
+                />) : null}
+              </View>
 
               {/* 리뷰 포스트 버튼 */}
-                <TouchableOpacity 
-                  // TODO: 업로드 메소드 만들기
-                  onPress={() => {
-                    console.warn(this.state);
-                    console.log("이미지:::"+this.state.imageLink.uri);
-                    this.postfmdata();
-                  }}
-                >
-                  <View style={styles.upload}><Text style={styles.uploadText}>리뷰 작성</Text></View>
-                </TouchableOpacity>
+              <TouchableOpacity
+                // TODO: 업로드 메소드 만들기
+                onPress={() => { this.postfmdata(); }}
+              >
+                <View style={styles.upload}><Text style={styles.uploadText}>리뷰 작성</Text></View>
+              </TouchableOpacity>
 
             </ScrollView>
           </View>
@@ -330,7 +351,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingTop: 20
   },
-  titleView: { 
+  titleView: {
     marginBottom: 10,
     flexDirection: 'row',
     alignItems: 'flex-end',
@@ -365,7 +386,7 @@ const styles = StyleSheet.create({
     borderColor: '#fea82f',
     borderWidth: 1,
     alignItems: 'center',
-    width: windowWidth*0.18, 
+    width: windowWidth * 0.18,
     marginRight: 5
   },
   upload: {
@@ -377,8 +398,49 @@ const styles = StyleSheet.create({
   uploadText: {
     fontSize: 18,
     fontWeight: 'bold'
-  }
+  },
+  selectDrink: {
+    flex: 1,
+    backgroundColor: '#876231'
+  },
 
+  inputView: {
+    flexDirection: 'row',
+    marginBottom: 2,
+    alignItems: 'center',
+  },
+  buttonView: {
+    flexDirection: 'row',
+    alignContent: 'center',
+    justifyContent: 'center',
+  },
+  buttons: {
+    margin: 10,
+    borderRadius: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+    textAlign: 'center',
+    backgroundColor: '#fc8621',
+    borderRadius: 30,
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+    width: windowWidth * 0.4,
+    alignSelf: 'center'
+  },
+  inputText: {
+    color: '#000',
+    fontSize: 16,
+    marginRight: 10,
+    textAlign: 'center'
+  },
+  listView: {
+    margin: 15,
+    flexDirection: 'row',
+  },
+  listItem: {
+    maringLeft: 15,
+  }
 })
 
 export default TwosomeReviewPost;

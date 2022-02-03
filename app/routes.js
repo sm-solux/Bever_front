@@ -130,7 +130,8 @@ export const RootNavigator = () => {
         headerStyle: {
           backgroundColor: '#FC8621',
         },
-        title: <LogoTitle />
+        title: <LogoTitle />,
+        headerLeft: null
       }}
     >
       <AuthStack.Screen name="SignIn" component={AuthComponent} options={{headerShown: false}}/>

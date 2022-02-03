@@ -70,7 +70,7 @@ class StarbucksReviewList extends Component {
             <View style={{ flex: 2.5 }}>
               <Text style={styles.titleText}>{review.title}</Text>
               <Text style={styles.writerText}>{dates}</Text>
-              <View style={styles.drinkView}><Text style={styles.drinkText}>{review.user.uesrID}</Text></View>
+              <View style={styles.drinkView}><Text style={styles.drinkText}>{review.userNickname}</Text></View>
             </View>
             <View style={{ borderRightColor: '#e8e8e8', borderRightWidth: 1 }}></View>
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>

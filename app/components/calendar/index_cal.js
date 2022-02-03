@@ -19,6 +19,7 @@ import CalendarPicker from "react-native-calendar-picker";
 import Icon from "react-native-vector-icons/Ionicons";
 import Icons from 'react-native-vector-icons/MaterialIcons';
 import {ediyaItem, starbucksItem, twosomeItem} from './Item';
+import { preURL } from "../preURL";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -58,7 +59,7 @@ class CalendarComponent extends Component {
     let params = "userID="+userID+"&month="+this.state.month;
     console.log(params);
       try{
-        fetch('http://localhost:8080/v1/calendar?userID='+userID+"&month="+this.state.month,{
+        fetch( preURL.preURL+'/v1/calendar?userID='+userID+"&month="+this.state.month,{
           method : "GET",
           headers : {
             'Content-Type' : 'application/json'
@@ -168,7 +169,7 @@ class CalendarComponent extends Component {
       console.log("아이디 : "+userID);
       let drink = this.state.drinkID;
       let date = this.state.drinkDate + " 00:00";
-      fetch('http://localhost:8080/v1/calendar/post',{
+      fetch(preURL.preURL+'/v1/calendar/post',{
         method : "POST",
         body : JSON.stringify({
           "userID" : userID,

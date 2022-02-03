@@ -10,7 +10,9 @@ import {
   Platform,
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
-  Keyboard
+  Keyboard,
+  Modal,
+  FlatList
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { ImagePicker, ImageOrVideo } from 'react-native-image-crop-picker';
@@ -19,6 +21,9 @@ import { TouchableOpacity } from 'react-native-gesture-handler';
 import AsyncStorage from '@react-native-community/async-storage';
 import axios from "axios";
 import { preURL } from '../preURL';
+import { starbucksItem, twosomeItem } from '../calendar/Item';
+import MIcons from 'react-native-vector-icons/MaterialIcons';
+import SectionedMultiSelect from "react-native-sectioned-multi-select";
 
 
 const windowWidth = Dimensions.get('window').width;
@@ -31,37 +36,101 @@ const options = {
   maxWidth: 300,
   maxHeight: 300,
 };
+const cafeList = [
+  { name: '카페', id: 0, children: [{ name: '스타벅스', id: 1000 }, { name: '투썸', id: 2000 }] }
+]
 
 class PostScreen extends Component {
   state = {
-    recipeData: {
+    
       title: '',
       content: '',
       imageLink: '',
-      uri: ''
+      uri: '',
+      writer: 1,
+      drinkOwners: 'STARBUCKS',
+      imageLink: '',
+      cafeName: [],
+      drinkList: starbucksItem,
+      drinkID: [],
+      selectedList: [],
+      modalVisible: false,
+    
+  }
+
+  componentDidMount() {
+    AsyncStorage.getItem('userID').then((value) => {
+      this.setState({ writer: value });
+    })
+  }
+
+  onSelectedItemsChange = (selectedItems) => {
+    this.setState({
+      drinkID: selectedItems
+    })
+  }
+
+  findList = (element) => {
+    if (element.date.substring(0, 10) === this.state.selectedDate) {
+      return true;
     }
+  }
+
+
+  setModalVisible = (visible) => {
+    this.setState({ modalVisible: visible });
+  }
+
+  onChangeCafe = (value) => {
+    this.setState({
+      cafeName: value
+    })
+  }
+
+  onChangeDrinkDate = (value) => {
+    this.setState({
+      drinkDate: value
+    })
+  }
+
+  onSelectedCafeChange = (selectedItems) => {
+    this.setState({
+      cafeName: selectedItems,
+    }, () => {
+      if (this.state.cafeName == 1000) {
+        this.setState({ drinkList: starbucksItem, drinkOwners: 'STARBUCKS' });
+
+      }
+      else if (this.state.cafeName == 2000) {
+        this.setState({ drinkList: twosomeItem, drinkOwners: 'TWOSOME' })
+      }
+    })
+
+  }
+
+  onSelectedItemsChange = (selectedItems) => {
+    this.setState({
+      drinkID: selectedItems
+    })
   }
 
   postfmdata = async () => {
 
-    
-    console.log( this.state.imageLink);
-    let userid = 1;
-    AsyncStorage.getItem('userID')
-    .then((value) => { userid=value; console.log("userid:"+value); })
-    .catch((err)=>{console.log(err)});
+    console.log(this.state);
+    console.log(this.state.uri.uri);
 
     const fd = new FormData();
     fd.append('file', {
       name: 'picture.jpg',
       type: 'image/jpeg',
-      uri: this.state.imageLink.uri
+      uri: this.state.uri.uri
     });
     fd.append("content", this.state.content);
     fd.append("title", this.state.title);
-    fd.append("writer", userid);
+    fd.append("writer", this.state.writer);
+    fd.append("drinkID", this.state.drinkID[0])
     console.log();
-    await fetch(preURL.preURL + '/v1/post/review', {
+    await fetch(preURL.preURL + '/v1/recipe/post', {
       method: 'POST',
       body: fd,
       headers: {
@@ -71,10 +140,9 @@ class PostScreen extends Component {
       .then(response => response.json())
       .then(json => {
         console.log('리스트 받았다! ', json);
-
-
       })
       .catch(err => {
+        if(String(err).includes("Success")){ this.props.navigation.goBack();}
         console.log('전송에 실패: ', err);
       });
 
@@ -82,26 +150,11 @@ class PostScreen extends Component {
 
   onChangeInput = (item, value) => {
     if (item === 'title') {
-      this.setState(prevState => ({
-        recipeData: {
-          ...prevState,
-          title: value,
-        }
-      }))
+      this.setState({title: value,});
     } else if (item === 'content') {
-      this.setState(prevState => ({
-        recipeData: {
-          ...prevState,
-          content: value,
-        }
-      }))
+      this.setState({content: value,});
     } else if (item === 'img') {
-      this.setState(prevState => ({
-        recipeData: {
-          ...prevState,
-          imageLink: value,
-        }
-      }))
+      this.setState({imageLink: value,});
     }
   }
 
@@ -110,111 +163,137 @@ class PostScreen extends Component {
   render() {
     return (
       <ScrollView>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : null}
-        style={styles.container}
-        enabled={true}
-      >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View >
-            <ScrollView>
-              <View style={styles.inputView}>
-                <TextInput
-                  value={this.state.recipeData.title}
-                  placeholder='제목을 입력하세요'
-                  placeholderTextColor='#BDBDBD'
-                  onSubmitEditing={(event) => this.textHandler(event.nativeEvent.text)}
-                  onChange={value => this.onChangeInput('title', value)}
-                  editable={true}
-                  style={styles.titleInput}
-                />
-              </View>
-              <View style={styles.inputView}>
-                <TextInput
-                  value={this.state.recipeData.content}
-                  placeholder='내용을 입력하세요'
-                  placeholderTextColor='#BDBDBD'
-                  // onSubmitEditing={(event)=>this.textHandler(event.nativeEvent.text)}
-                  onChange={value => this.onChangeInput('content', value)}
-                  editable={true}
-                  multiline={true}
-                  style={styles.contentInput}
-                />
-              </View>
-              <View style={styles.imageButtonView}>
-                {/* TODO: 이미지 가져오는 버튼(갤러리, 카메라) */}
-                <TouchableOpacity
-                  onPress={() => launchImageLibrary(options, response => {
-                    if (response.didCancel) {
-                      console.log('User cancelled image picker');
-                    } else if (response.errorCode) {
-                      console.log('ImagePicker Error: ', response.errorCode);
-                    } else {
-                      this.setState({
-                        recipeData: {
-                          ...this.state.recipeData,
-                          uri: response.assets[0]
-                        }
-                      })
-                    }
-                  })}
-                //   onPress={() => ImagePicker.openPicker({
-                //     width: 300,
-                //     height: 300,
-                //     cropping: true
-                //   }).then(image => {
-                //     this.setState({
-                //       recipeData: {
-                //         ...this.state.recipeData,
-                //         uri: image.path
-                //       }
-                //     })
-                //   }).catch((error)=>{
-                //     console.log(error);
-                //   })
-                // }
-                >
-                  <View style={styles.imageButton}>
-                    <Icon name='images-outline' size={30} color='#fff' />
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : null}
+          style={styles.container}
+          enabled={true}
+        >
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+            <View >
+              <ScrollView>
+                {/* 음료 입력란 */}
+                <View style={[styles.titleView, { alignItems: 'flex-start' }]}>
+                  <View style={styles.inputView2}>
+                    <Text style={styles.titleText}>카페</Text>
+                    <View style={{ flex: 1 }}>
+                      <SectionedMultiSelect
+                        items={cafeList}
+                        IconRenderer={MIcons}
+                        uniqueKey="id"
+                        subKey="children"
+                        selectText="카페를 선택하세요"
+                        showDropDowns={true}
+                        readOnlyHeadings={true}
+                        onSelectedItemsChange={this.onSelectedCafeChange}
+                        selectedItems={this.state.cafeName}
+                        single={true}
+                      />
+                    </View>
                   </View>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => launchCamera(options, response => {
-                    if (response.didCancel) {
-                      console.log('User cancelled image picker');
-                    } else if (response.errorCode) {
-                      console.log('ImagePicker Error: ', response.errorCode);
-                    } else {
-                      this.setState({
-                        recipeData: {
-                          ...this.state.recipeData,
-                          uri: response.assets[0]
-                        }
-                      })
-                    }
-                  })}
-                >
-                  <View style={styles.imageButton}>
-                    <Icon name='camera-outline' size={30} color='#fff' />
-                  </View>
-                </TouchableOpacity>
-              </View>
-              {this.state.recipeData.uri ? (<Image
-                source={this.state.recipeData.uri}
-                style={{ width: 300, height: 300, }}
-                resizeMode='contain'
-              />) : null}
-              <TouchableOpacity
-              onPress={()=>{this.postfmdata();}}
-              >
-                <View style={styles.recipeUpload}>
-                  <Text style={styles.recipeUploadText}>레시피 추가</Text>
                 </View>
-              </TouchableOpacity>
-            </ScrollView>
-          </View>
-        </TouchableWithoutFeedback>
-      </KeyboardAvoidingView>
+
+                <View style={[styles.titleView, { alignItems: 'flex-start' }]}>
+                  <View style={styles.inputView2}>
+                    <Text style={styles.titleText}>메뉴</Text>
+                    <View style={{ flex: 1 }}>
+                      <SectionedMultiSelect
+                        items={this.state.drinkList}
+                        IconRenderer={MIcons}
+                        uniqueKey="id"
+                        subKey="children"
+                        selectText="음료를 선택하세요"
+                        showDropDowns={true}
+                        readOnlyHeadings={true}
+                        onSelectedItemsChange={this.onSelectedItemsChange}
+                        selectedItems={this.state.drinkID}
+                        single={true}
+                      />
+                    </View>
+                  </View>
+                </View>
+                <View style={styles.inputView}>
+                  <TextInput
+                    value={this.state.title}
+                    placeholder='제목을 입력하세요'
+                    placeholderTextColor='#BDBDBD'
+                    onSubmitEditing={(event) => this.textHandler(event.nativeEvent.text)}
+                    onChangeText={value => this.onChangeInput('title', value)}
+                    editable={true}
+                    style={styles.titleInput}
+                  />
+                </View>
+                <View style={styles.inputView}>
+                  <TextInput
+                    value={this.state.content}
+                    placeholder='내용을 입력하세요'
+                    placeholderTextColor='#BDBDBD'
+                    // onSubmitEditing={(event)=>this.textHandler(event.nativeEvent.text)}
+                    onChangeText={value => this.onChangeInput('content', value)}
+                    editable={true}
+                    multiline={true}
+                    style={styles.contentInput}
+                  />
+                </View>
+                
+                <View style={styles.imageButtonView}>
+                  {/* TODO: 이미지 가져오는 버튼(갤러리, 카메라) */}
+                  <TouchableOpacity
+                    onPress={() => launchImageLibrary(options, response => {
+                      if (response.didCancel) {
+                        console.log('User cancelled image picker');
+                      } else if (response.errorCode) {
+                        console.log('ImagePicker Error: ', response.errorCode);
+                      } else {
+                        this.setState({
+                          
+                            ...this.state,
+                            uri: response.assets[0]
+                          
+                        })
+                      }
+                    })}
+                  >
+                    <View style={styles.imageButton}>
+                      <Icon name='images-outline' size={30} color='#fff' />
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => launchCamera(options, response => {
+                      if (response.didCancel) {
+                        console.log('User cancelled image picker');
+                      } else if (response.errorCode) {
+                        console.log('ImagePicker Error: ', response.errorCode);
+                      } else {
+                        this.setState({
+                          
+                            ...this.state,
+                            uri: response.assets[0]
+                          
+                        })
+                      }
+                    })}
+                  >
+                    <View style={styles.imageButton}>
+                      <Icon name='camera-outline' size={30} color='#fff' />
+                    </View>
+                  </TouchableOpacity>
+                </View>
+                {this.state.uri ? (<Image
+                  source={this.state.uri}
+                  style={{ width: 300, height: 300, }}
+                  resizeMode='contain'
+                />) : null}
+                <TouchableOpacity
+                  onPress={() => { this.postfmdata(); }}
+                >
+                  <View style={styles.recipeUpload}>
+                    <Text style={styles.recipeUploadText}>레시피 추가</Text>
+                  </View>
+                </TouchableOpacity>
+              </ScrollView>
+            </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </ScrollView>
     )
   }
@@ -265,6 +344,53 @@ const styles = StyleSheet.create({
   recipeUploadText: {
     fontSize: 18,
     fontWeight: 'bold'
+  },
+  titleView: {
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+  },
+  titleText: {
+    color: '#000',
+    fontSize: 20,
+    marginRight: 10
+  },
+  inputView2: {
+    flexDirection: 'row',
+    marginBottom: 2,
+    alignItems: 'center',
+  },
+  buttonView: {
+    flexDirection: 'row',
+    alignContent: 'center',
+    justifyContent: 'center',
+  },
+  buttons: {
+    margin: 10,
+    borderRadius: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+    textAlign: 'center',
+    backgroundColor: '#fc8621',
+    borderRadius: 30,
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 16,
+    width: windowWidth * 0.4,
+    alignSelf: 'center'
+  },
+  inputText: {
+    color: '#000',
+    fontSize: 16,
+    marginRight: 10,
+    textAlign: 'center'
+  },
+  listView: {
+    margin: 15,
+    flexDirection: 'row',
+  },
+  listItem: {
+    maringLeft: 15,
   }
 })
 

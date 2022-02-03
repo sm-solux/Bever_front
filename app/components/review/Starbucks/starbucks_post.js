@@ -59,18 +59,6 @@ class StarbucksReviewPost extends Component {
     }
   }
 
-  onDateChange = (date) => {
-    this.setState({
-      selectedDate: date.toISOString().substring(0, 10)
-    }, () => {
-      let subList = [];
-      subList = this.state.List.filter(this.findList);
-      this.setState({
-        selectedList: subList,
-        selectedFlag: true,
-      })
-    })
-  }
 
   setModalVisible = (visible) => {
     this.setState({ modalVisible: visible });
@@ -144,7 +132,7 @@ class StarbucksReviewPost extends Component {
     fd.append("writer", this.state.writer);
     fd.append("drinkID", drink[0]);
 
-    await fetch(preURL.preURL + '/v1/post/review', {
+    await fetch(preURL.preURL + '/v1/review/post', {
       method: 'POST',
       body: fd,
       headers: {

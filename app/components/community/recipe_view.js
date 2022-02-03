@@ -9,6 +9,10 @@ import {
   Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-community/async-storage';
+import axios from "axios";
+import { preURL } from '../preURL';
+
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -23,10 +27,15 @@ class RecipeView extends Component {
       imageLink: require('../../assets/images/starbucks.jpg'),
       date: '2022.01.07 11:23',
       heart: false,
-      heartCount: 255
-    }
+      heartCount: 255,
+      recipeID:0,
+    },
+    userID:0
   }
   componentDidMount(){
+    AsyncStorage.getItem('userID').then((value) => {
+      this.setState({ userID: value });
+    });
     let recipe = this.props.route.params.recipe;
     let dates = recipe.date.replace('T', ' ');
     this.setState({ 
@@ -37,8 +46,9 @@ class RecipeView extends Component {
         content: recipe.content,
         imageLink: recipe.imageLink,
         heart: false,
-        heartCount: 255,
+        heartCount: recipe.scrapCount,
         date:dates,
+        recipeID:recipe.recipeID
       }
      }) 
 
@@ -52,6 +62,15 @@ class RecipeView extends Component {
         heart: !this.state.post.heart
       }
     })
+    
+    axios
+      .post(preURL.preURL + '/v1/scrap/post',{userID:this.state.userID, recipeID:this.state.post.recipeID })
+      .then(res => {
+        console.log("성공",res.data);
+      })
+      .catch(err => {
+        console.log('에러 발생: ', err);
+      });
   }
   render() {
     return (
@@ -82,7 +101,7 @@ class RecipeView extends Component {
           />
           <View style={styles.imageView}>
             <Image 
-              source={this.state.post.imageLink}
+              source={{uri: this.props.route.params.recipe.imageLink}}
               style={styles.image}
             />
           </View>

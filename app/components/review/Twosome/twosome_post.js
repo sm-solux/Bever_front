@@ -142,7 +142,7 @@ class TwosomeReviewPost extends Component {
     fd.append("writer", this.state.writer);
     fd.append("drinkID", drink[0]);
 
-    await fetch(preURL.preURL + '/v1/post/review', {
+    await fetch(preURL.preURL + '/v1/review/post', {
       method: 'POST',
       body: fd,
       headers: {

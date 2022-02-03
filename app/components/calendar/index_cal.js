@@ -45,44 +45,49 @@ class CalendarComponent extends Component {
     List : [],
     selectedList : [],
     selectedFlag : false,
-    customDatesStyles : []
+    customDatesStyles : [],
   } 
+  userID = 1;
 
-    getList = () => {
+
+    getList = async() => {
     console.log(this.state.month+"월 리스트 요청");
-      let userID = 1;
-      async()=>{
-        AsyncStorage.getItem('userID').then((value) => { userID=value; console.log("userid:"+userID); }).catch((err)=>{console.log(err)});
-      }
-      params = "userID="+userID+"&month="+this.state.month;
+
+    AsyncStorage.getItem('userID').then((value) => {
+      userID=value; console.log("userid:"+userID); 
+    let params = "userID="+userID+"&month="+this.state.month;
+    console.log(params);
       try{
-        fetch('http://localhost:8080/v1/calendar?'+params,{
+        fetch('http://localhost:8080/v1/calendar?userID='+userID+"&month="+this.state.month,{
           method : "GET",
           headers : {
             'Content-Type' : 'application/json'
           }
         }).then(res=>res.json())
         .then((res)=>{
-          this.setState({
-            List : res,
-            flag : !this.state.flag
-          },()=>{
-            let dateList = [];
-            this.state.List.map((item)=>{
-              dateList.push({
-                date : item.date.substring(0,10),
-                style : {backgroundColor : countColor[1]},
-                textStyle : { color : 'white'}
+            console.log("데이터 불러옴");
+            this.setState({
+              List : res,
+              flag : !this.state.flag
+            },()=>{
+              let dateList = [];
+              this.state.List.map((item)=>{
+                dateList.push({
+                  date : item.date.substring(0,10),
+                  style : {backgroundColor : countColor[1]},
+                  textStyle : { color : 'white'}
+                })
+              })
+              this.setState({
+                customDatesStyles : dateList
               })
             })
-            this.setState({
-              customDatesStyles : dateList
-            })
-          })
+
         })
       }catch(err) {
         console.log(err);
       }
+    }).catch((err)=>{console.log("아이디에러" + err)});
   }
 
     monthEnum = {
@@ -160,6 +165,7 @@ class CalendarComponent extends Component {
     try{
       console.log("날짜:"+this.state.drinkDate+" 00:00");
       console.log("음료 : "+this.state.drinkID);
+      console.log("아이디 : "+userID);
       let drink = this.state.drinkID;
       let date = this.state.drinkDate + " 00:00";
       fetch('http://localhost:8080/v1/calendar/post',{

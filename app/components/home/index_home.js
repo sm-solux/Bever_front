@@ -24,6 +24,7 @@ class HomeComponent extends Component {
     userName:'',
   }
 
+
   onChangeText(value) {
     this.setState({
       searchValue: value
@@ -166,6 +167,7 @@ class HomeComponent extends Component {
   )
 
   render() {
+    //AsyncStorage.clear();
     return (
       <View style={styles.container}>
         <View style={styles.searchView}>

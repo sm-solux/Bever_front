@@ -1,5 +1,8 @@
 import moment from "moment";
 import React, { Component } from "react";
+import SectionedMultiSelect from "react-native-sectioned-multi-select";
+import AsyncStorage from '@react-native-community/async-storage';
+
 import {
   View,
   Text,
@@ -10,33 +13,110 @@ import {
   Modal,
   TextInput,
   Alert,
+  FlatList
 } from 'react-native';
 import CalendarPicker from "react-native-calendar-picker";
 import Icon from "react-native-vector-icons/Ionicons";
+import Icons from 'react-native-vector-icons/MaterialIcons';
+import {ediyaItem, starbucksItem, twosomeItem} from './Item';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const countColor = ['#fc862133', '#fc862166', '#fc862199', '#fc8621cc', '#fc8621'];
+
+const cafeList = [
+  { name : '카페', id : 0, children : [ {name : '스타벅스', id : 1000} , {name : '투썸' , id : 2000} ] }
+]
+
+let userID=null;
+
+
 class CalendarComponent extends Component {
   state = {
     selectedDate: null,
-    drinkName: '',
-    cafeName: '',
+    cafeName: [],
+    drinkList : starbucksItem,
+    drinkID : [],
     drinkDate: '',
     modalVisible: false,
-    drinkCount: 0
+    month : new Date().getMonth()+1,
+    flag : true,
+    List : [],
+    selectedList : [],
+    selectedFlag : false,
+    customDatesStyles : []
   } 
 
-  customDatesStyles=[{
-    date: moment('2022-02-15'),
-    style: {backgroundColor: countColor[0]},
-    textStyle: {color: 'black'}, // sets the font color
-  }];
+    getList = () => {
+    console.log(this.state.month+"월 리스트 요청");
+      let userID = 1;
+      async()=>{
+        AsyncStorage.getItem('userID').then((value) => { userID=value; console.log("userid:"+userID); }).catch((err)=>{console.log(err)});
+      }
+      params = "userID="+userID+"&month="+this.state.month;
+      try{
+        fetch('http://localhost:8080/v1/calendar?'+params,{
+          method : "GET",
+          headers : {
+            'Content-Type' : 'application/json'
+          }
+        }).then(res=>res.json())
+        .then((res)=>{
+          this.setState({
+            List : res,
+            flag : !this.state.flag
+          },()=>{
+            let dateList = [];
+            this.state.List.map((item)=>{
+              dateList.push({
+                date : item.date.substring(0,10),
+                style : {backgroundColor : countColor[1]},
+                textStyle : { color : 'white'}
+              })
+            })
+            this.setState({
+              customDatesStyles : dateList
+            })
+          })
+        })
+      }catch(err) {
+        console.log(err);
+      }
+  }
+
+    monthEnum = {
+    "Jan" : 1, "Feb" : 2, "Mar" : 3, "Apr" : 4, "May" : 5, "Jun" : 6, "Jul" : 7, "Aug" : 8,
+    "Sep" : 9, "Oct" : 10, "Nov" : 11, "Dec" : 12
+  }
+
+    onMonthChange = (month) => {
+    month = (month.toString()).substring(4,7);
+    console.log("month : "+month);
+    this.setState({
+      month : this.monthEnum[month],
+      flag : !this.state.flag,
+      selectedFlag : !this.state.selectedFlag
+    });
+    console.log("월 바뀜");
+  }
+
+  findList = (element) => {
+    if(element.date.substring(0,10) === this.state.selectedDate) {
+      return true;
+    }
+  }
 
   onDateChange = (date) => {
     this.setState({
-      selectedDate: date,
+    selectedDate : date.toISOString().substring(0,10)
+    },()=>{
+      let subList = [];
+      subList = this.state.List.filter(this.findList);
+      this.setState({
+        selectedList : subList,
+        selectedFlag : true,
+      })
     })
   }
 
@@ -44,33 +124,9 @@ class CalendarComponent extends Component {
     this.setState({ modalVisible: visible });
   }
 
-  renderDrinkItem = () => (
-    <View style={styles.menuView}>
-      <Icon name="ellipse" color={'#fc8621'} size={10} style={styles.dot}/>
-      <View style={styles.menuText}>
-        <Text style={styles.cafe}>스타벅스</Text>
-        <Text style={styles.menu}>아이스 아메리카노</Text>
-      </View>
-      <View style={styles.iconView}>
-        <TouchableOpacity 
-          //TODO: 수정메소드 onPress={}
-        ><Icon name="pencil" color={'#fc8621'} size={20} style={styles.pencil}/></TouchableOpacity>
-        <TouchableOpacity
-          //TODO: 삭제메소드 onPress={}
-        ><Icon name="trash" color={'#fc8621'} size={20} style={styles.trash}/></TouchableOpacity>
-      </View>
-    </View> 
-  )
-
   onChangeCafe = (value) =>{
     this.setState({
       cafeName: value
-    })
-  }
-
-  onChangeDrink = (value) =>{
-    this.setState({
-      drinkName: value
     })
   }
 
@@ -80,8 +136,103 @@ class CalendarComponent extends Component {
     })
   }
 
+  onSelectedCafeChange = (selectedItems) => {
+    this.setState({
+      cafeName: selectedItems,
+    },()=>{
+      if(this.state.cafeName==1000) {
+        this.setState({drinkList : starbucksItem})
+      }
+      else if (this.state.cafeName==2000) {
+        this.setState({drinkList : twosomeItem})
+      }
+    })
+
+  }
+
+  onSelectedItemsChange = (selectedItems) => {
+    this.setState({
+      drinkID: selectedItems
+    })
+  }
+
+    submitData = () =>{
+    try{
+      console.log("날짜:"+this.state.drinkDate+" 00:00");
+      console.log("음료 : "+this.state.drinkID);
+      let drink = this.state.drinkID;
+      let date = this.state.drinkDate + " 00:00";
+      fetch('http://localhost:8080/v1/calendar/post',{
+        method : "POST",
+        body : JSON.stringify({
+          "userID" : userID,
+          "drinkID" : drink,
+          "date" : date
+        }),
+        headers : {
+          'Content-Type' : 'application/json'
+        }
+      })
+      .then((res)=>{
+        if(res.status==200) {
+          console.log("데이터 저장 성공");
+          Alert.alert("저장 완료");
+          this.setState({
+            flag:!this.state.flag,
+            modalVisible : !this.state.modalVisible
+          })
+        }
+        else {
+          console.log(res);
+        }
+      })
+    }catch(err) {
+      console.log(err);
+    }
+
+  }
+
+    renderItem = ({item})=>(
+      <View style={styles.listView}>
+        <View style={styles.listItem}>
+          {item.drinks.drinkImageLink?(
+            <Image style={{width:70, height:70, borderRadius:10, marginRight:10}} source={{uri:item.drinks.drinkImageLink}}/>
+          ):(
+            <Text style={{width:70, height:70, paddingTop : 25, borderRadius: 10, borderWidth :1,marginRight:10 }}>이미지 없음</Text>
+          )}
+        </View>
+        <View style={[styles.listItem]}>
+          <Text style={{paddingBottom:15}}>{item.date.substring(0,10)}</Text>
+          <Text>{item.drinks.drinkOwners} {item.drinks.drinkName}</Text>
+        </View>
+      </View>
+  )
+
   render() {
     const { modalVisible } = this.state;
+
+    if(this.state.flag) { 
+      this.getList();
+    }
+
+    let flatlist = null;
+    if(this.state.selectedFlag) {
+      flatlist = 
+          <FlatList
+            data = {this.state.selectedList}
+            renderItem = {this.renderItem}
+            keyExtractor = {item=>item.calendarID}
+          />
+    }
+    else {
+      flatlist = 
+          <FlatList
+          data = {this.state.List}
+          renderItem = {this.renderItem}
+          keyExtractor = {item=>item.calendarID}
+        />
+    }
+
     return (
       <View style={styles.container}>
       {/* 추가 모달창 */}
@@ -105,34 +256,62 @@ class CalendarComponent extends Component {
                 />
               </View>
               <View style={styles.inputView}>
-                <Text style={styles.inputText}>카페명</Text>
-                <TextInput 
-                  value={this.state.cafeName}
-                  placeholder="카페명을 입력해주세요"
-                  onChangeText={this.onChangeCafe}/>
+                <Text style={styles.inputText}>카페</Text>
+                <View style={{flex:1}}>
+                  <SectionedMultiSelect
+                      items={cafeList}
+                      IconRenderer={Icons}
+                      uniqueKey="id"
+                      subKey="children"
+                      selectText="카페를 선택하세요"
+                      showDropDowns={true}
+                      readOnlyHeadings={true}
+                      onSelectedItemsChange={this.onSelectedCafeChange}
+                      selectedItems={this.state.cafeName}
+                      single={true}
+                    />
+                </View>
               </View>
               <View style={styles.inputView}>
-                <Text style={styles.inputText}>메뉴명</Text>
-                <TextInput 
-                  value={this.state.drinkName}
-                  placeholder="메뉴명을 입력해주세요"
-                  onChangeText={this.onChangeDrink}/>
+                <Text style={styles.inputText}>메뉴</Text> 
+                <View style={{flex:1}}>
+                  <SectionedMultiSelect
+                    items={this.state.drinkList}
+                    IconRenderer={Icons}
+                    uniqueKey="id"
+                    subKey="children"
+                    selectText="음료를 선택하세요"
+                    showDropDowns={true}
+                    readOnlyHeadings={true}
+                    onSelectedItemsChange={this.onSelectedItemsChange}
+                    selectedItems={this.state.drinkID}
+                    single={true}
+                  />
+                  {/* <Text>{this.state.drinkID}</Text> */}
+                </View>
               </View>
-              <TouchableOpacity
-                onPress={()=>{
-                  //TODO: 등록메소드
-                  this.setModalVisible(!modalVisible)
-                  console.warn(this.state.drinkDate, this.state.cafeName, this.state.drinkName)
-                }}
-              >
-                <Text style={styles.addButton}>추가하기</Text>
-              </TouchableOpacity>
+              <View style={styles.buttonView}>
+                <TouchableOpacity
+                  onPress={()=>{this.submitData()}}
+                >
+                  <Text style={styles.buttons}>추가하기</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={()=>{
+                    this.setModalVisible(!modalVisible)
+                  }}
+                >
+                  <Text style={styles.buttons}>취소하기</Text>
+                </TouchableOpacity>
+              </View>
+
             </View>
           </View>
         </Modal>
 
         <CalendarPicker 
           onDateChange={this.onDateChange} 
+          onMonthChange={this.onMonthChange}
           selectedDayColor="#fff"
           selectedDayTextColor="#ffbf00"
           weekdays={["일","월","화","수","목","금","토"]}
@@ -140,17 +319,14 @@ class CalendarComponent extends Component {
           monthNamesShort={["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"]}
           previousTitle={"이전 달"}
           nextTitle={"다음 달"}
-          // textStyle={{fontFamily:fontFamily, color:fontColor}}
-          // onMonthChange={(date)=>{setMonth(changeMonthType(date.toString()))}}
-          customDatesStyles={this.customDatesStyles}
+          customDatesStyles={this.state.customDatesStyles}
           minDate={new Date(2020,12,1)}
           maxDate={new Date(2050,11,31)}
         />
         <View style={styles.line}></View>
 
       {/* 먹은 음료 리스트 */}
-        {this.renderDrinkItem()}
-        {this.renderDrinkItem()}
+        {flatlist}
 
       {/* 추가 버튼 */}
         <TouchableOpacity
@@ -240,8 +416,16 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignItems: 'center',
   },
-  addButton: {
-    padding: 10,
+  buttonView : {
+    flexDirection : 'row',
+    alignContent : 'center',
+    justifyContent : 'center',
+  },
+  buttons: {
+    margin : 10,
+    borderRadius : 20,
+    paddingTop: 10,
+    paddingBottom : 10,
     textAlign: 'center',
     backgroundColor: '#fc8621',
     borderRadius: 30,
@@ -256,6 +440,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginRight: 10,
     textAlign: 'center'
+  },
+    listView : {
+    margin : 15,
+    flexDirection : 'row',
+  },
+  listItem : {
+    maringLeft : 15,
   }
 })
 

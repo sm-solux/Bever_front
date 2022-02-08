@@ -249,9 +249,9 @@ class StarbucksReviewPost extends Component {
                     spacing={4}
                     starSize={40}
                     count={5}
-                    fullStar={<Icons name='star-sharp' style={styles.stars} />}
-                    halfStar={<Icons name='star-half-sharp' style={styles.stars} />}
-                    emptyStar={<Icons name='star-outline' style={styles.stars} />}
+                    fullStar={<Icon name='star-sharp' style={styles.stars} />}
+                    halfStar={<Icon name='star-half-sharp' style={styles.stars} />}
+                    emptyStar={<Icon name='star-outline' style={styles.stars} />}
                   />
                 </View>
               </View>

@@ -10,7 +10,6 @@ import axios from "axios";
 import { preURL } from '../../preURL';
 import AsyncStorage from '@react-native-community/async-storage';
 import { starbucksItem, twosomeItem } from "../../calendar/Item";
-import MIcons from 'react-native-vector-icons/MaterialIcons';
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -214,7 +213,7 @@ class TwosomeReviewPost extends Component {
                   <View style={{ flex: 1 }}>
                     <SectionedMultiSelect
                       items={cafeList}
-                      IconRenderer={MIcons}
+                      IconRenderer={Icons}
                       uniqueKey="id"
                       subKey="children"
                       selectText="카페를 선택하세요"
@@ -234,7 +233,7 @@ class TwosomeReviewPost extends Component {
                   <View style={{ flex: 1 }}>
                     <SectionedMultiSelect
                       items={this.state.drinkList}
-                      IconRenderer={MIcons}
+                      IconRenderer={Icons}
                       uniqueKey="id"
                       subKey="children"
                       selectText="음료를 선택하세요"
@@ -259,9 +258,9 @@ class TwosomeReviewPost extends Component {
                     spacing={4}
                     starSize={40}
                     count={5}
-                    fullStar={<Icons name='star-sharp' style={styles.stars} />}
-                    halfStar={<Icons name='star-half-sharp' style={styles.stars} />}
-                    emptyStar={<Icons name='star-outline' style={styles.stars} />}
+                    fullStar={<Icon name='star-sharp' style={styles.stars} />}
+                    halfStar={<Icon name='star-half-sharp' style={styles.stars} />}
+                    emptyStar={<Icon name='star-outline' style={styles.stars} />}
                   />
                 </View>
               </View>

@@ -1,6 +1,6 @@
 import 'react-native-gesture-handler';
 import React from 'react';
-
+import { LogBox} from 'react-native';
 // Navigator
 import { createStackNavigator } from '@react-navigation/stack'; 
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -9,11 +9,13 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 // indexes
 import SignIn from './components/auth/index_auth';
 import AuthComponent from './components/auth/auth_nav';
-import Home from './components/home/index_home';
+// import Home from './components/home/index_home';
 import Review from './components/review/index_rev';
 import Community from './components/community/index_com';
 import Calendar from './components/calendar/index_cal';
 import MyPage from './components/myPage/index_myp';
+import DrinkInfoComponent from './components/home/index_drinkinfo';
+import HomeNavComponent from './components/home/index_com';
 
 // import Recipe from './components/community/recipe_nav';
 // import HeartsList from './components/community/hearts_list';
@@ -26,11 +28,12 @@ import LogoTitle from './utils/logo';
 // Icon
 import Icon from 'react-native-vector-icons/Ionicons';
 import { create } from 'react-test-renderer';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const AuthStack = createStackNavigator();
 const MenuDrawer = createDrawerNavigator();
 const MainScreenTab = createBottomTabNavigator();
-
+LogBox.ignoreAllLogs();
 const HomeStack = createStackNavigator();
 const ReviewStack = createStackNavigator();
 const CommunityStack = createStackNavigator();
@@ -60,8 +63,14 @@ const TabBarIcon = (focused, name) => {
 
 const HomeStackComponent = () => {
   return (
-    <HomeStack.Navigator>
-      <HomeStack.Screen name='Home_stack' component={Home} options={{headerShown: false}}/>
+    <HomeStack.Navigator screenOptions={{
+      headerShown: false
+    }} >
+      <HomeStack.Screen name='Home_stack' component={HomeNavComponent} screenOptions={{
+    headerShown: false
+  }}/>
+      
+      
     </HomeStack.Navigator>
   )
 }
@@ -122,6 +131,12 @@ const AppTabComponent = () => {
 }
 
 export const RootNavigator = () => {
+  const [isLoggedIn ,setIsLoggedIn] = React.useState(false);
+  AsyncStorage.getItem('isLoggedIn')
+            .then((value) => {
+              setIsLoggedIn(value);
+              // if (value == 'true') {this.props.navigation.navigate('Root', {screen: 'Main'});}
+            });
   return (
     <AuthStack.Navigator
       screenOptions={{
@@ -134,14 +149,17 @@ export const RootNavigator = () => {
         headerLeft: null
       }}
     >
-      <AuthStack.Screen name="SignIn" component={AuthComponent} options={{headerShown: false}}/>
-      <AuthStack.Screen name="Main" component={AppTabComponent} />
-      {/* { isLoggedIn ? (
+      {/* <AuthStack.Screen name="SignIn" component={AuthComponent} options={{headerShown: false}}/>
+      <AuthStack.Screen name="Main" component={AppTabComponent} /> */}
+      { isLoggedIn=='true' ? (
         <AuthStack.Screen name="Main" component={AppTabComponent} />
       ) : (
+        <>
         <AuthStack.Screen name="SignIn" component={AuthComponent} options={{headerShown: false}}/>
+        <AuthStack.Screen name="Main" component={AppTabComponent} />
+        </>
       )
-      } */}
+      }
     </AuthStack.Navigator>
   )
 }

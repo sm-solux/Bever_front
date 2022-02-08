@@ -1,6 +1,8 @@
-import React, { Component } from "react";  
-import { View, Text, StyleSheet, TextInput, ScrollView, Image, 
-  TouchableOpacity, Dimensions} from 'react-native';
+import React, { Component } from "react";
+import {
+  View, Text, StyleSheet, TextInput, ScrollView, Image,
+  TouchableOpacity, Dimensions
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
 const windowWidth = Dimensions.get('window').width;
@@ -43,15 +45,22 @@ class TwosomeReviewView extends Component {
               <Text>/5.0</Text>
             </View>
           </View>
-          <Text style={styles.writer}>{this.props.route.params.user}</Text>
-          <Text style={styles.date}>{this.props.route.params.date}</Text>
+          <Text style={styles.writerText}></Text>
+          <View style={{ flex: 1, flexDirection: 'row' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.date}>{this.props.route.params.date}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.writer}>{this.props.route.params.writer}</Text>
+            </View>
+          </View>
           <View style={styles.line}></View>
 
           {/* 이미지 뷰 */}
           {this.state.imageLink ? (
             <View style={{ alignItems: 'center', marginBottom: 10 }}>
               <Image
-                source={{uri: this.props.route.params.uri}}
+                source={{ uri: this.props.route.params.uri }}
                 style={{ width: 300, height: 300, resizeMode: 'contain' }}
               />
             </View>
@@ -74,7 +83,7 @@ const styles = StyleSheet.create({
   titleView: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  }, 
+  },
   title: {
     fontSize: 24,
     fontWeight: '500',
@@ -83,12 +92,13 @@ const styles = StyleSheet.create({
   },
   writer: {
     fontSize: 14,
-    marginTop: 15,
+    // marginTop: 15,
     color: '#111',
+    textAlign: 'right'
   },
   date: {
     fontSize: 13,
-    color:'#A8A8A8'
+    color: '#A8A8A8'
   },
   line: {
     marginVertical: 10,

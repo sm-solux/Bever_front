@@ -1,5 +1,5 @@
-import React, { Component } from "react";  
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, TextInput, ScrollView} from 'react-native';
+import React, { Component } from "react";
+import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions, TextInput, ScrollView, RefreshControl } from 'react-native';
 import Icon from "react-native-vector-icons/Ionicons";
 import axios from "axios";
 import { preURL } from '../../preURL';
@@ -10,16 +10,38 @@ const windowHeight = Dimensions.get('window').height;
 
 class TwosomeReviewList extends Component {
   state = {
-    drinkID : "음료아이디",
-    writer : "글 작성자 아이디",
+    drinkID: "음료아이디",
+    writer: "글 작성자 아이디",
     title: "게시글 제목",
     content: "게시글내용",
-    imageLink:"게시글 이미지 존재 시 이미지 링크",
-    date:"글 작성날짜",
+    imageLink: "게시글 이미지 존재 시 이미지 링크",
+    date: "글 작성날짜",
     rate: 4.5,
     searchValue: '',
-    lists:[]
+    lists: [],
+    refreshing: false,
   }
+  wait = (timeout) => {
+    return new Promise(resolve => setTimeout(resolve, timeout));
+  };
+
+  onRefresh = () => {
+    this.setState({ refreshing: true });
+    this.wait(1000).then(() => {
+      console.log("start");
+      axios
+        .get(preURL.preURL + '/v1/review/get/TWOSOME')
+        .then(res => {
+          this.setState({ lists: res.data.list.reverse() })
+          this.setState({refreshing:false}); 
+        })
+        .catch(err => {
+          console.log('에러 발생: ', err);
+        });
+      console.log("finish");
+
+    })
+  };
 
   onSearchValue = (input) => {
     this.setState({
@@ -35,7 +57,7 @@ class TwosomeReviewList extends Component {
     axios
       .get(preURL.preURL + '/v1/review/get/TWOSOME')
       .then(res => {
-        this.setState({ lists: res.data.list })
+        this.setState({ lists: res.data.list.reverse() })
         console.log(this.state.lists);
       })
       .catch(err => {
@@ -44,23 +66,26 @@ class TwosomeReviewList extends Component {
   }
 
   renderReviewItem = () => (
-    this.state.lists.reverse().filter((originList) =>{
-      if(this.state.searchValue == ""){
+    this.state.lists.filter((originList) => {
+      if (this.state.searchValue == "") {
         return originList;
-      }else if(originList.title.toLowerCase().includes(this.state.searchValue.toLowerCase())){
+      } else if (originList.title.toLowerCase().includes(this.state.searchValue.toLowerCase())) {
+        return originList;
+      } else if(originList.drinkName.toLowerCase().includes(this.state.searchValue.toLowerCase())){
         return originList;
       }
     }
     ).map((review) => {
       let dates = review.date.replace('T', ' ');
-      
-      
+
+
       return (
         <TouchableOpacity
-          onPress={() => {this.props.navigation.navigate('TwosomeReviewView',
-          {key:review.reviewID, uri:review.imageLink, title:review.title, date:dates, writer:review.user, rate:review.rate, content:review.content})
-        }}
-          
+          onPress={() => {
+            this.props.navigation.navigate('TwosomeReviewView',
+              { key: review.reviewID, uri: review.imageLink, title: review.title, date: dates, writer: review.userNickname, rate: review.rate, content: review.content })
+          }}
+
         >
           <View style={styles.reviewItemView}>
             <Image
@@ -70,7 +95,7 @@ class TwosomeReviewList extends Component {
             <View style={{ flex: 2.5 }}>
               <Text style={styles.titleText}>{review.title}</Text>
               <Text style={styles.writerText}>{dates}</Text>
-              <View style={styles.drinkView}><Text style={styles.drinkText}>{review.userNickname}</Text></View>
+              <View style={styles.drinkView}><Text style={styles.drinkText}>{review.drinkName}</Text></View>
             </View>
             <View style={{ borderRightColor: '#e8e8e8', borderRightWidth: 1 }}></View>
             <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
@@ -87,9 +112,9 @@ class TwosomeReviewList extends Component {
   render() {
     return (
       <View style={styles.contain}>
-      {/* 검색바 */}
+        {/* 검색바 */}
         <View style={styles.searchView}>
-          <TextInput 
+          <TextInput
             value={this.state.searchValue}
             placeholder='검색어 입력'
             onChangeText={this.onSearchValue}
@@ -97,33 +122,36 @@ class TwosomeReviewList extends Component {
           />
           <TouchableOpacity
             style={styles.searchIcon}
-            onPress={()=>this.onSearch(this.state.searchValue)}
+            onPress={() => this.onSearch(this.state.searchValue)}
           >
             <Icon name='search' size={32} color='#7E7D7D' />
           </TouchableOpacity>
         </View>
 
-      {/* 게시글 목록 뷰 */}
-        <ScrollView>
+        {/* 게시글 목록 뷰 */}
+        <ScrollView
+        refreshing={this.state.refreshing}
+          refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.onRefresh} />}
+        >
           {this.renderReviewItem()}
         </ScrollView>
 
-      {/* 게시글 작성 버튼 */}
+        {/* 게시글 작성 버튼 */}
         <TouchableOpacity
           style={{
             position: 'absolute',
-            left: windowWidth*0.82,
-            top: windowHeight*0.7,
+            left: windowWidth * 0.82,
+            top: windowHeight * 0.6,
           }}
-          onPress={() => {this.props.navigation.navigate('TwosomeReviewPost')}}
+          onPress={() => { this.props.navigation.navigate('TwosomeReviewPost') }}
         >
-          <Image 
+          <Image
             source={require('../../../assets/images/addButton.png')}
-            style={{width: 50, height: 50}}
+            style={{ width: 50, height: 50 }}
             resizeMode='contain'
           />
         </TouchableOpacity>
-        
+
       </View>
     )
   }
@@ -132,7 +160,7 @@ class TwosomeReviewList extends Component {
 const styles = StyleSheet.create({
   contain: {
     flex: 1,
-    padding: 20, 
+    padding: 20,
     backgroundColor: '#fff',
   },
   searchView: {
@@ -181,6 +209,10 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     alignSelf: 'flex-start'
   },
+  drinkText:{
+    fontSize: 10,
+    fontWeight:'bold',
+  }
 })
 
 export default TwosomeReviewList;

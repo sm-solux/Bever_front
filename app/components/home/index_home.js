@@ -20,8 +20,8 @@ class HomeComponent extends Component {
     searchValue: '',
     drinkList: [],
     drinkList2: [],
-    rank:0,
-    userName:'',
+    rank: 0,
+    userName: '',
   }
 
 
@@ -31,17 +31,17 @@ class HomeComponent extends Component {
     })
   }
   componentDidMount() {
-    
+
 
     // postServer(){
     // useEffect(() => {
-      AsyncStorage.getItem('userNickname').then((value) => {
-        this.setState({ userName:value })
-      });
-      AsyncStorage.getItem('userID').then((value) => {
-        console.log(value);
-      });
-      
+    AsyncStorage.getItem('userNickname').then((value) => {
+      this.setState({ userName: value })
+    });
+    AsyncStorage.getItem('userID').then((value) => {
+      console.log(value);
+    });
+
 
     axios
       .get(preURL.preURL + '/v1/user/recommend/2')
@@ -60,7 +60,7 @@ class HomeComponent extends Component {
       .catch(err => {
         console.log('에러 발생: ', err);
       });
-      
+
     // }
   }
 
@@ -73,8 +73,8 @@ class HomeComponent extends Component {
     // TODO: TouchableOpacity onPress 함수 적용
     this.state.drinkList.map((drink) => {
       let drinkname = drink.drinkName;
-      if(drink.drinkName.length >= 14){
-        drinkname= drink.drinkName.substr(0,11)+"..";
+      if (drink.drinkName.length >= 14) {
+        drinkname = drink.drinkName.substr(0, 11) + "..";
 
       }
       return (
@@ -100,17 +100,17 @@ class HomeComponent extends Component {
     })
 
   )
-  
 
-  renderRankMenuItems = () =>(
+
+  renderRankMenuItems = () => (
 
     this.state.drinkList2.map((drink) => {
-      let drinkname =drink.drinkName;
-      if(drink.drinkName.length >= 14){
-        drinkname= drink.drinkName.substr(0,11)+"...";
+      let drinkname = drink.drinkName;
+      if (drink.drinkName.length >= 14) {
+        drinkname = drink.drinkName.substr(0, 11) + "...";
       }
 
-      this.state.rank=this.state.rank+1;
+      this.state.rank = this.state.rank + 1;
       let source = '';
       if (this.state.rank === 1) {
         source = require('../../assets/images/rank1.png')
@@ -119,7 +119,7 @@ class HomeComponent extends Component {
       } else if (this.state.rank === 3) {
         source = require('../../assets/images/rank3.png')
       }
-      let ids = drink.drinkId + "rank"+this.state.rank;
+      let ids = drink.drinkId + "rank" + this.state.rank;
       console.log(ids);
       return (
         <TouchableOpacity key={ids}>
@@ -156,15 +156,58 @@ class HomeComponent extends Component {
     )
   )
 
-  renderRankItem = () => (
+  renderRankItem = () => {
     // FIXME: map 함수로 rank 받아오기
-    <TouchableOpacity>
-      <View style={styles.rankTextView}>
-        <Text style={styles.rankNumberText}>1.</Text>
-        <Text>스타벅스</Text>
-      </View>
-    </TouchableOpacity>
-  )
+
+    return (<View>
+
+      <TouchableOpacity>
+        <View style={styles.rankTextView}>
+          <Text style={styles.rankNumberText}>1.</Text>
+          <Text>스타벅스</Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <View style={styles.rankTextView}>
+          <Text style={styles.rankNumberText}>3.</Text>
+          <Text>아이스 아메리카노</Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <View style={styles.rankTextView}>
+          <Text style={styles.rankNumberText}>5.</Text>
+          <Text>아메리카노</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+    )
+  }
+  renderRankItem2 = () => {
+    // FIXME: map 함수로 rank 받아오기
+
+    return (<View>
+
+      <TouchableOpacity>
+        <View style={styles.rankTextView}>
+          <Text style={styles.rankNumberText}>2.</Text>
+          <Text>로얄 밀크티</Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <View style={styles.rankTextView}>
+          <Text style={styles.rankNumberText}>4.</Text>
+          <Text>카라멜마키아또</Text>
+        </View>
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <View style={styles.rankTextView}>
+          <Text style={styles.rankNumberText}>6.</Text>
+          <Text>카모마일</Text>
+        </View>
+      </TouchableOpacity>
+    </View>
+    )
+  }
 
   render() {
     //AsyncStorage.clear();
@@ -176,56 +219,50 @@ class HomeComponent extends Component {
             editable={true}
             placeholder='음료 검색'
             placeholderTextColor='#BDBDBD'
-            onChangeText={value=>this.onChangeText(value)}
+            onChangeText={value => this.onChangeText(value)}
             style={styles.searchInput}
           />
           <TouchableOpacity
             style={styles.searchIcon}
-            onPress={()=>this.search(this.state.searchValue)}
+            onPress={() => this.search(this.state.searchValue)}
           >
             <Icon name='search' size={32} color='#7E7D7D' />
           </TouchableOpacity>
         </View>
+        <ScrollView showsHorizontalScrollIndicator={false}>
+          <View style={styles.menuContainer}>
+            <Text style={styles.menuTitle}>{this.state.userName} 님의 추천 메뉴</Text>
+            <ScrollView style={styles.scrollView} horizontal={true} showsHorizontalScrollIndicator={false}>
+              {this.renderItems()}
 
-        <View style={styles.menuContainer}>
-          <Text style={styles.menuTitle}>{this.state.userName} 님의 추천 메뉴</Text>
-          <ScrollView style={styles.scrollView} horizontal={true} showsHorizontalScrollIndicator={false}>
-            {this.renderItems()}
+            </ScrollView>
+          </View>
+          <View style={styles.line} />
 
-          </ScrollView>
-        </View>
-        <View style={styles.line} />
+          <View style={[styles.menuContainer]}>
+            <Text style={styles.menuTitle}>인기 급상승 메뉴</Text>
+            <ScrollView style={styles.scrollView} horizontal={true} showsHorizontalScrollIndicator={false}>
+              {this.renderRankMenuItems()}
+            </ScrollView>
+          </View>
+          <View style={styles.line} />
 
-        <View style={[styles.menuContainer]}>
-          <Text style={styles.menuTitle}>인기 급상승 메뉴</Text>
-          <ScrollView style={styles.scrollView} horizontal={true} showsHorizontalScrollIndicator={false}>
-            {this.renderRankMenuItems()}
-          </ScrollView>
-        </View>
-        <View style={styles.line} />
-
-        <View style={[styles.menuContainer, {flex: 0.9}]}>
-          <Text style={styles.menuTitle}>실시간 검색어 순위</Text>
-          <View style={{marginTop: 5}}>
-            <View style={{flexDirection: 'row'}}>
-              {/* TODO: 검색어 순위 받아와서 자동화 되게 수정하기 */}
-              <View style={{flex: 1}}>
-                {this.renderRankItem()}
-                {this.renderRankItem()}
-                {this.renderRankItem()}
-                {this.renderRankItem()}
-                {this.renderRankItem()}
-              </View>
-              <View style={{flex: 1}}>
-                {this.renderRankItem()}
-                {this.renderRankItem()}
-                {this.renderRankItem()}
-                {this.renderRankItem()}
-                {this.renderRankItem()}
+          <View style={[styles.menuContainer, { flex: 0.9 }]}>
+            <Text style={styles.menuTitle}>실시간 검색어 순위</Text>
+            <View style={{ marginTop: 5 }}>
+              <View style={{ flexDirection: 'row' }}>
+                {/* TODO: 검색어 순위 받아와서 자동화 되게 수정하기 */}
+                <View style={{ flex: 1 }}>
+                  {this.renderRankItem()}
+                  
+                </View>
+                <View style={{ flex: 1 }}>
+                  {this.renderRankItem2()}
+                </View>
               </View>
             </View>
           </View>
-        </View>
+        </ScrollView>
       </View>
     )
   }
@@ -236,7 +273,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     flex: 1,
   },
-  searchView:{
+  searchView: {
     flexDirection: 'row',
     backgroundColor: '#E8E8E8',
     borderRadius: 30,
@@ -270,14 +307,14 @@ const styles = StyleSheet.create({
   scrollView: {
     marginVertical: 5
   },
-  menuItem:{
+  menuItem: {
     marginHorizontal: 2,
   },
   menuItemImageView: {
     width: 100,
     height: 100,
-    borderWidth:1, 
-    borderRadius: 10, 
+    borderWidth: 1,
+    borderRadius: 10,
     borderColor: '#FC8621',
     justifyContent: 'center',
     alignItems: 'center',

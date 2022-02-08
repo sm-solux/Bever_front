@@ -44,8 +44,15 @@ class StarbucksReviewView extends Component {
               <Text>/5.0</Text>
             </View>
           </View>
-          <Text style={styles.writer}>{this.props.route.params.user}</Text>
-          <Text style={styles.date}>{this.props.route.params.date}</Text>
+          <Text style={styles.writerText}></Text>
+          <View style={{ flex: 1, flexDirection: 'row' }}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.date}>{this.props.route.params.date}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.writer}>{this.props.route.params.writer}</Text>
+            </View>
+          </View>
           <View style={styles.line}></View>
 
           {/* 이미지 뷰 */}
@@ -84,8 +91,9 @@ const styles = StyleSheet.create({
   },
   writer: {
     fontSize: 14,
-    marginTop: 15,
+    // marginTop: 15,
     color: '#111',
+    textAlign: 'right'
   },
   date: {
     fontSize: 13,

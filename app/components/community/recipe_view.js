@@ -45,7 +45,7 @@ class RecipeView extends Component {
         title: recipe.title,
         content: recipe.content,
         imageLink: recipe.imageLink,
-        heart: false,
+        heart: this.props.route.params.isscraped,
         heartCount: recipe.scrapCount,
         date:dates,
         recipeID:recipe.recipeID
@@ -63,7 +63,8 @@ class RecipeView extends Component {
       }
     })
     
-    axios
+    if(!this.state.post.heart){
+      axios
       .post(preURL.preURL + '/v1/scrap/post',{userID:this.state.userID, recipeID:this.state.post.recipeID })
       .then(res => {
         console.log("성공",res.data);
@@ -71,6 +72,16 @@ class RecipeView extends Component {
       .catch(err => {
         console.log('에러 발생: ', err);
       });
+    }else{
+      axios
+      .post(preURL.preURL + '/v1/scrap/unpost',{userID:this.state.userID, recipeID:this.state.post.recipeID })
+      .then(res => {
+        console.log("성공",res.data);
+      })
+      .catch(err => {
+        console.log('에러 발생: ', err);
+      });
+    }
   }
   render() {
     return (

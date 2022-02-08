@@ -1,8 +1,17 @@
 import React from "react";
-import { View, Image, Text, StyleSheet } from 'react-native';
+import { View, Image, Text, StyleSheet,TouchableOpacity, NativeModules } from 'react-native';
+import AsyncStorage from '@react-native-community/async-storage';
 
 const LogoTitle = () => (
-  <View style={styles.container}>
+  
+    <TouchableOpacity 
+    onPress={()=>{
+      AsyncStorage.setItem('isLoggedIn', 'false').then(() => {
+        console.log("로그인 set false");
+        NativeModules.DevSettings.reload();
+      });}}
+    >
+      <View style={styles.container}>
     <Image 
       source={require('../assets/images/bever.png')}
       style={{width: 50, height: 50, flex: 1}}
@@ -14,7 +23,9 @@ const LogoTitle = () => (
       style={{width: 50, height: 50, flex: 1}}
       resizeMode='contain'
     />
-  </View>
+    </View>
+    </TouchableOpacity>
+  
 )
 
 const styles = StyleSheet.create({

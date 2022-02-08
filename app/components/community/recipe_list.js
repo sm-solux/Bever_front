@@ -8,12 +8,11 @@ import {
   ScrollView,
   Dimensions,
   Image,
-  Button
+  Button,
+  RefreshControl
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 
-import PostScreen from "./post";
-import RecipeView from "./recipe_view";
 import axios from "axios";
 import { preURL } from '../preURL';
 import AsyncStorage from '@react-native-community/async-storage';
@@ -27,30 +26,28 @@ class RecipeList extends Component {
   state = {
     searchValue: '',
     lists: [],
-    posts: {
-      postID: '00000',
-      imageLink: require('../../assets/images/starbucks.jpg'),
-      title: '이디야 토피넛 라떼 레시피 추천',
-      content: '게시글 내용',
-      date: '2022.01.07 11:23',
-      writer: 'abcde',
-
-    },
-
+    scraplist: [],
+    userID: 0,
+    refreshing: false,
   }
   componentDidMount() {
-    axios
-      .get(preURL.preURL + '/v1/recipe/list')
-      .then(res => {
-        // console.log("2"+typeof(res.data));
-        // console.log( res.data);
-        this.setState({ lists: res.data })
-        // console.log(this.state.lists);
-        // console.log("3"+typeof(res.data));
-      })
-      .catch(err => {
-        console.log('에러 발생: ', err);
-      });
+
+    AsyncStorage.getItem('userID').then((value) => {
+      this.setState({ userID: value });
+      console.log("userid:" + this.state.userID);
+      axios
+        .get(preURL.preURL + '/v1/recipe/list/' + this.state.userID)
+        .then(res => {
+          this.setState({ lists: res.data.recipeList.reverse() });
+          this.setState({ scraplist: res.data.userScrapList });
+          console.log("take", this.state.scraplist);
+          console.log("take2", this.state.lists[0].recipeID);
+        })
+        .catch(err => {
+          console.log('에러 발생: ', err);
+        });
+    })
+
   }
 
   renderSearchBar = () => (
@@ -60,7 +57,7 @@ class RecipeList extends Component {
         editable={true}
         placeholder='Search'
         placeholderTextColor='#BDBDBD'
-        onChange={value => this.onChangeText(value)}
+        onChangeText={(value) => { this.onChangeText(value); }}
         style={styles.searchInput}
       />
       <TouchableOpacity
@@ -72,6 +69,7 @@ class RecipeList extends Component {
     </View>
   )
 
+
   onChangeText = (value) => {
     this.setState({
       searchValue: value
@@ -82,57 +80,106 @@ class RecipeList extends Component {
     // TODO: 검색하는 메소드 작성
   }
 
+  wait = (timeout) => {
+    return new Promise(resolve => setTimeout(resolve, timeout));
+  };
+
+  onRefresh = () => {
+    this.setState({ refreshing: true });
+    this.wait(1000).then(() => {
+      console.log("start");
+      axios
+        .get(preURL.preURL + '/v1/recipe/list/' + this.state.userID)
+        .then(res => {
+          this.setState({ lists: res.data.recipeList.reverse() });
+          this.setState({ scraplist: res.data.userScrapList });
+          this.setState({refreshing:false}); 
+        })
+        .catch(err => {
+          console.log('에러 발생: ', err);
+        });
+        console.log("finish");
+        
+    })
+  };
 
   renderRecipeItem = () => (
 
-    this.state.lists.reverse().filter((originList) =>{
-      if(this.state.searchValue == ""){
+    this.state.lists.filter((originList) => {
+
+      console.log("검색어", this.state.searchValue);
+      console.log("제목", String(originList.title).toLowerCase());
+      if (this.state.searchValue == "") {
         return originList;
-      }else if(originList.title.toLowerCase().includes(this.state.searchValue.toLowerCase())){
+      } else if (this.state.searchValue.indexOf("#") == 0
+        && (originList.drinkOwner.toLowerCase().includes(this.state.searchValue.substring(1))
+          || originList.drinkName.toLowerCase().includes(this.state.searchValue.substring(1)))) {
         return originList;
       }
+      else if (originList.title.toLowerCase().includes(this.state.searchValue.toLowerCase())) {
+        return originList;
+      }
+
     }
     ).map((recipe) => {
 
-      console.log(recipe);
-      let dates= recipe.date.replace('T', ' ');
+
+      let isscrap = false;
+
+      if (this.state.scraplist.includes(recipe.recipeID)) { isscrap = true; }
+      let dates = recipe.date.replace('T', ' ');
       return (
-        <TouchableOpacity
-          onPress={() => { this.props.navigation.navigate('RecipeView', {recipe:recipe} ); }}
-        >
-          <View style={styles.recipeItem}>
-            {recipe.imageLink ? (
-              <View style={{ alignItems: 'center' }}>
-                <Image
-                  source={{ uri: recipe.imageLink }}
-                  style={{
+        <View>
+          <TouchableOpacity
+            onPress={() => { this.props.navigation.navigate('RecipeView', { recipe: recipe, isscraped: isscrap }); }}
+          >
+            <View style={styles.recipeItem}>
+              {recipe.imageLink ? (
+                <View style={{ alignItems: 'center' }}>
+                  <Image
+                    source={{ uri: recipe.imageLink }}
+                    style={{
+                      backgroundColor: '#E8E8E8',
+                      borderRadius: 10,
+                      width: windowWidth * 0.89,
+                      height: windowHeight * 0.3,
+                    }}
+                  />
+                </View>
+              ) : (
+                <View style={{ alignItems: 'center' }}>
+                  <View style={{
                     backgroundColor: '#E8E8E8',
                     borderRadius: 10,
                     width: windowWidth * 0.89,
-                    height: windowHeight * 0.3,
-                  }}
-                />
+                    height: windowHeight * 0.1,
+                    justifyContent: 'center',
+                    alignItems: 'center'
+                  }}><Text>No Image</Text></View>
+                </View>
+              )}
+              <View style={styles.recipeTextView}>
+                <Text style={styles.recipeTitle}>{recipe.title}</Text>
+
+
               </View>
-            ) : (
-              <View style={{ alignItems: 'center' }}>
-                <View style={{
-                  backgroundColor: '#E8E8E8',
-                  borderRadius: 10,
-                  width: windowWidth * 0.89,
-                  height: windowHeight * 0.1,
-                  justifyContent: 'center',
-                  alignItems: 'center'
-                }}><Text>No Image</Text></View>
-              </View>
-            )}
-            <View style={styles.recipeTextView}>
-              <Text style={styles.recipeTitle}>{recipe.title}</Text>
-              <Text style={styles.timeText}>{dates}</Text>
             </View>
+          </TouchableOpacity>
+          <View style={{ flexDirection: "row" }}>
+            <TouchableOpacity
+              onPress={() => { let text = '#' + recipe.drinkOwner; this.setState({ searchValue: text }); }}
+            >
+              <View style={styles.drinkView}><Text style={styles.hashtags}># {recipe.drinkOwner}</Text></View>
+            </TouchableOpacity>
+            <Text>  </Text>
+            <TouchableOpacity
+              onPress={() => { let text = '#' + recipe.drinkName; this.setState({ searchValue: text }); }}
+            >
+              <View style={styles.drinkView}><Text style={styles.hashtags}># {recipe.drinkName}</Text></View>
+            </TouchableOpacity>
           </View>
-
-        </TouchableOpacity>
-
+          <Text style={styles.timeText}>{dates}</Text>
+        </View>
       )
     })
 
@@ -145,14 +192,17 @@ class RecipeList extends Component {
           title="click"
           onPress={()=>{this.props.navigation.navigate('Post')}}/> */}
         {this.renderSearchBar()}
-        <ScrollView>
+        <ScrollView
+          
+          refreshControl={<RefreshControl refreshing={this.state.refreshing} onRefresh={this.onRefresh} />}
+        >
           {this.renderRecipeItem()}
         </ScrollView>
         <TouchableOpacity
           style={{
             position: 'absolute',
             left: windowWidth * 0.82,
-            top: windowHeight * 0.7,
+            top: windowHeight * 0.6,
           }}
           onPress={() => { this.props.navigation.navigate('Post') }}
         >
@@ -212,7 +262,18 @@ const styles = StyleSheet.create({
   },
   timeText: {
     paddingTop: 2,
-  }
+  },
+  hashtags: {
+    fontStyle: 'italic',
+    textDecorationLine: 'underline'
+  },
+  drinkView: {
+    padding: 3,
+    paddingHorizontal: 10,
+    backgroundColor: '#eee',
+    borderRadius: 30,
+    alignSelf: 'flex-start'
+  },
 })
 
 export default RecipeList;
